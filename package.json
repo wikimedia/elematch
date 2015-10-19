@@ -1,0 +1,30 @@
+{
+  "name": "element-match",
+  "version": "0.1.0",
+  "description": "Efficient HTML elment matching and -processing",
+  "main": "lib/index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha --ui exports"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gwicke/element-match.git"
+  },
+  "keywords": [
+    "element",
+    "match",
+    "sax"
+  ],
+  "author": "Gabriel Wicke <gwicke@wikimedia.org>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/gwicke/element-match/issues"
+  },
+  "homepage": "https://github.com/gwicke/element-match#readme",
+  "devDependencies": {
+    "mocha": "^2.3.3"
+  }
+}
