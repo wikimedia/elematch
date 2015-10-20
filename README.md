@@ -1,11 +1,11 @@
-# element-match [![Build Status](https://travis-ci.org/gwicke/element-match.svg?branch=master)](https://travis-ci.org/gwicke/element-match)
+# elematch [![Build Status](https://travis-ci.org/gwicke/elematch.svg?branch=master)](https://travis-ci.org/gwicke/elematch)
 
 Efficient element matching and processing for XMLSerializer serialized HTML.
 
 ## Usage
 
 ```javascript
-var ElementMatcher = require('element-match');
+var EleMatch = require('elematch');
 
 /**
  * @param {object} node, a DOM node like object.
@@ -24,7 +24,7 @@ function handler(node, prefix) {
 }
 
 // Create a matcher to handle some elements.
-var matcher = new ElementMatcher({
+var matcher = new EleMatch({
     'test-element': handler,
     'foo-bar': handler,
 });
@@ -59,7 +59,7 @@ takes about 2.15ms CPU time.
 
 ## Syntactical requirements
 
-`element-match` gets much of its efficiency from leveraging the syntactic
+`elematch` gets much of its efficiency from leveraging the syntactic
 regularity of HTML5 and
 [XMLSerializer](https://developer.mozilla.org/en-US/docs/XMLSerializer)
 DOM serialization.
