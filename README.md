@@ -55,7 +55,7 @@ var matches = matcher.matchAll(testDoc);
 
 Replacing 32 `<figure>` elements in [the Barack Obama
 article](en.wikipedia.org/api/rest_v1/page/html/Barack_Obama) (1.5mb HTML)
-takes about 2.45ms CPU time.
+takes about 2.15ms CPU time.
 
 ## Syntactical requirements
 
@@ -70,7 +70,9 @@ Detailed requirements:
 - **Quoted attributes**: All attribute values are quoted using single or
     double quotes (HTML5, XMLSerializer). 
 
-The current version pays a 30% performance penalty for *avoiding* the following
+### Possible speed-up for XMLSerializer output
+
+The current version pays a ~15% performance penalty for *avoiding* the following
 requirement:
 
 - **`<` escaped in attribute values**: In attribute values, the left angle
