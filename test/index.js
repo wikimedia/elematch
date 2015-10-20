@@ -52,7 +52,7 @@ module.exports = {
         "Obama": function() {
             var obama = fs.readFileSync('test/obama.html', 'utf8');
             var startTime = Date.now();
-            var n = 1;
+            var n = 20;
             for (var i = 0; i < n; i++) {
                 matcher.matchAll(obama);
             }
