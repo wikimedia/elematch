@@ -1,6 +1,6 @@
 # element-match [![Build Status](https://travis-ci.org/gwicke/element-match.svg?branch=master)](https://travis-ci.org/gwicke/element-match)
 
-Efficient element matching and processing for (X)HTML 5 DOM serialized HTML.
+Efficient element matching and processing for XMLSerializer serialized HTML.
 
 ## Usage
 
@@ -29,13 +29,20 @@ takes about 1.9ms CPU time.
 ## Syntactical requirements
 
 `element-match` gets much of its efficiency from leveraging the syntactic
-regularity of HTML5 DOM (or
-[XMLSerializer](https://developer.mozilla.org/en-US/docs/XMLSerializer))
-serialization.
+regularity of
+[XMLSerializer](https://developer.mozilla.org/en-US/docs/XMLSerializer)
+DOM serialization.
 
-Detailed requirements (implicit in HTML5 serialization):
+Detailed requirements:
 
-- **Well-formed DOM**: All tags are balanced.
+- **Well-formed DOM**: Handled tags are balanced (HTML5, XMLSerializer).
 - **Quoted attributes**: All attribute values are quoted using single or
-    double quotes. The left angle bracket (`<`) is entity-escaped inside
-    attribute values.
+    double quotes (HTML5, XMLSerializer). 
+- **`<` escaped in attribute values**: In attribute values, the left angle
+    bracket (`<`) is entity-escaped. This is [not required in the HTML5
+    spec](http://www.w3.org/TR/html5/syntax.html#serializing-html-fragments),
+    but *is* required in [the XMLSerializer
+    spec](http://www.w3.org/TR/DOM-Parsing/#dfn-concept-serialize-attr-value).
+    [Parsoid](https://www.mediawiki.org/wiki/Parsoid) HTML is serialized [using
+    the XMLSerializer
+    algorithm](https://github.com/wikimedia/parsoid/blob/master/lib/XMLSerializer.js).
