@@ -24,12 +24,12 @@ var matches = matcher.machAll(someDoc);
 
 Replacing 32 `<figure>` elements in [the Barack Obama
 article](en.wikipedia.org/api/rest_v1/page/html/Barack_Obama) (1.5mb HTML)
-takes about 1.9ms CPU time.
+takes about 2.45ms CPU time.
 
 ## Syntactical requirements
 
 `element-match` gets much of its efficiency from leveraging the syntactic
-regularity of
+regularity of HTML5 and
 [XMLSerializer](https://developer.mozilla.org/en-US/docs/XMLSerializer)
 DOM serialization.
 
@@ -38,6 +38,10 @@ Detailed requirements:
 - **Well-formed DOM**: Handled tags are balanced (HTML5, XMLSerializer).
 - **Quoted attributes**: All attribute values are quoted using single or
     double quotes (HTML5, XMLSerializer). 
+
+The current version pays a 30% performance penalty for *avoiding* the following
+requirement:
+
 - **`<` escaped in attribute values**: In attribute values, the left angle
     bracket (`<`) is entity-escaped. This is [not required in the HTML5
     spec](http://www.w3.org/TR/html5/syntax.html#serializing-html-fragments),

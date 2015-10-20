@@ -21,7 +21,7 @@ function innerHTML(s) {
 
 var testHead = "<doctype html><head><title>hello</title></head>\n";
 var testFooter = "<body></body>";
-var customElement = "<test-element foo='bar' baz=\"booz\">"
+var customElement = "<test-element foo='bar <figure >' baz=\"booz\">"
             + "<foo-bar></foo-bar><figure>hello</figure></test-element>";
 
 var testDoc = testHead + customElement + testFooter;
@@ -34,7 +34,7 @@ module.exports = {
             assert.equal(n0.innerHTML, innerHTML(customElement));
             assert.equal(n0.outerHTML, customElement);
             assert.deepEqual(n0.attributes, {
-                foo: 'bar',
+                foo: 'bar <figure >',
                 baz: 'booz'
             });
         },
