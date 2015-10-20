@@ -64,22 +64,20 @@ regularity of HTML5 and
 [XMLSerializer](https://developer.mozilla.org/en-US/docs/XMLSerializer)
 DOM serialization.
 
-Detailed requirements:
+Detailed requirements (all true for HTML5 fragment serializer / XMLSerializer
+output):
 
-- **Well-formed DOM**: Handled tags are balanced (HTML5, XMLSerializer).
+- **Well-formed DOM**: Handled tags are balanced.
 - **Quoted attributes**: All attribute values are quoted using single or
-    double quotes (HTML5, XMLSerializer). 
+    double quotes. 
 
 ### Possible speed-up for XMLSerializer output
 
-The current version pays a ~15% performance penalty for *avoiding* the following
-requirement:
-
-- **`<` escaped in attribute values**: In attribute values, the left angle
-    bracket (`<`) is entity-escaped. This is [not required in the HTML5
-    spec](http://www.w3.org/TR/html5/syntax.html#serializing-html-fragments),
-    but *is* required in [the XMLSerializer
-    spec](http://www.w3.org/TR/DOM-Parsing/#dfn-concept-serialize-attr-value).
-    [Parsoid](https://www.mediawiki.org/wiki/Parsoid) HTML is serialized [using
-    the XMLSerializer
-    algorithm](https://github.com/wikimedia/parsoid/blob/master/lib/XMLSerializer.js).
+The current version pays a ~15% performance penalty for supporting unadorned
+(not entity-escaped) angle brackets (`<`) in attribute values. Such escaping
+[is guaranteed for XMLSerializer
+output](http://www.w3.org/TR/DOM-Parsing/#dfn-concept-serialize-attr-value)
+[as emitted for example by
+Parsoid](https://github.com/wikimedia/parsoid/blob/master/lib/XMLSerializer.js),
+but [is not required in the HTML5
+spec](http://www.w3.org/TR/html5/syntax.html#serializing-html-fragments).
