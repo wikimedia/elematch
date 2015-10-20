@@ -7,17 +7,48 @@ Efficient element matching and processing for XMLSerializer serialized HTML.
 ```javascript
 var ElementMatcher = require('element-match');
 
-function handler(node) {
+/**
+ * @param {object} node, a DOM node like object.
+ * @param {string} prefix, the HTML prefix string since the last match.
+ * @return {object} Anything really; return values are accumulated in an
+ *   array.
+ */
+function handler(node, prefix) {
+    // `node` is .
+    // `prefix` is .
     // Do something with the node
-    return Promise.resolve(node.outerHTML);
+    return {
+        node: node,
+        prefix: prefix,
+    };
 }
 
+// Create a matcher to handle some elements.
 var matcher = new ElementMatcher({
     'test-element': handler,
     'foo-bar': handler,
 });
 
-var matches = matcher.machAll(someDoc);
+var testDoc = "<html><body><div>"
+        + "<test-element foo='bar'>foo</test-element>"
+        + "</div></body>";
+
+// Finally, execute it all.
+var matches = matcher.matchAll(testDoc);
+
+// [
+//   {
+//     "node": {
+//       "nodeName": "test-element",
+//       "attributes": {
+//         "foo": "bar"
+//       },
+//       "outerHTML": "<test-element foo='bar'>foo</test-element>",
+//       "innerHTML": "foo"
+//     },
+//     "prefix": "<html><body><div>"
+//   }
+// ]
 ```
 
 ## Performance

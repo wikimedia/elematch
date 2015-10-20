@@ -5,9 +5,9 @@ var fs = require('fs');
 
 var ElementMatcher = require('../lib/index');
 
-function id(n) { return n; }
+function id(n, prefix) { return n; }
 var figures = 0;
-function figure(n) { figures++; return n; }
+function figure(n, prefix) { figures++; return n; }
 
 var matcher = new ElementMatcher({
     'test-element': id,
