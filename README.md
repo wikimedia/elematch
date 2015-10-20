@@ -1,6 +1,6 @@
 # elematch [![Build Status](https://travis-ci.org/gwicke/elematch.svg?branch=master)](https://travis-ci.org/gwicke/elematch)
 
-Efficient element matching and processing for XMLSerializer serialized HTML.
+Efficient element matching and processing for HTML5 DOM serialized HTML.
 
 ## Usage
 
@@ -56,6 +56,15 @@ var matches = matcher.matchAll(testDoc);
 Replacing 32 `<figure>` elements in [the Barack Obama
 article](en.wikipedia.org/api/rest_v1/page/html/Barack_Obama) (1.5mb HTML)
 takes about 2.15ms CPU time.
+
+This compares to these numbers for a smaller (1.1mb) version of the same page:
+- SAX parse via libxmljs (node) and no-op handlers: 64ms
+- XML DOM parse via libxmljs (node): 16ms
+  - XPATH match for ID (ex: `dom.find('//*[@id = "mw123"]')`) : 15ms
+  - XPATH match for class (ex: `dom.find("//*[contains(concat(' ', normalize-space(@class), ' '), ' interlanguage-link ')]")`: 34ms
+- HTML5 DOM parse via Mozilla's [html5ever](https://github.com/servo/html5ever): 32ms
+  - full round-trip with serialization: 60ms
+- HTML5 DOM parse via domino (node): 220ms
 
 ## Syntactical requirements
 
