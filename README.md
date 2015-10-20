@@ -30,7 +30,7 @@ takes about 1.9ms CPU time.
 
 `element-match` gets much of its efficiency from leveraging the syntactic
 regularity of HTML5 DOM (or
-[XMLSerializer](https://developer.mozilla.org/en-US/docs/XMLSerializer)
+[XMLSerializer](https://developer.mozilla.org/en-US/docs/XMLSerializer))
 serialization.
 
 Detailed requirements (implicit in HTML5 serialization):
