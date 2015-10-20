@@ -1,15 +1,18 @@
 'use strict';
 
 var assert = require('assert');
+var fs = require('fs');
 
 var ElementMatcher = require('../lib/index');
 
 function id(n) { return n; }
+var figures = 0;
+function figure(n) { figures++; return n; }
 
 var matcher = new ElementMatcher({
     'test-element': id,
     'foo-bar': id,
-    'span': id,
+    'figure': figure,
 });
 
 function innerHTML(s) {
@@ -19,7 +22,7 @@ function innerHTML(s) {
 var testHead = "<doctype html><head><title>hello</title></head>\n";
 var testFooter = "<body></body>";
 var customElement = "<test-element foo='bar' baz=\"booz\">"
-            + "<foo-bar></foo-bar><span>hello</span></test-element>";
+            + "<foo-bar></foo-bar><figure>hello</figure></test-element>";
 
 var testDoc = testHead + customElement + testFooter;
 
@@ -35,8 +38,8 @@ module.exports = {
                 baz: 'booz'
             });
         },
-        "span": function() {
-            var testElement = '<span>foo</span>';
+        "figure": function() {
+            var testElement = '<figure>foo</figure>';
             var doc = testHead + '<div>' + testElement + '</div>' + testFooter;
             var nodes = matcher.matchAll(doc);
             var n0 = nodes[0];
@@ -44,5 +47,19 @@ module.exports = {
             assert.equal(n0.outerHTML, testElement);
             assert.deepEqual(n0.attributes, {});
         }
+    },
+    "performance": {
+        "Obama": function() {
+            var obama = fs.readFileSync('test/obama.html', 'utf8');
+            var startTime = Date.now();
+            var n = 1;
+            for (var i = 0; i < n; i++) {
+                matcher.matchAll(obama);
+            }
+            console.log(figures);
+            console.log((Date.now() - startTime) / n + 'ms per match');
+        }
     }
 };
+
+//module.exports.performance.Obama();
