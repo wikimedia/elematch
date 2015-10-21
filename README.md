@@ -9,18 +9,12 @@ var EleMatch = require('elematch');
 
 /**
  * @param {object} node, a DOM node like object.
- * @param {string} prefix, the HTML prefix string since the last match.
  * @return {object} Anything really; return values are accumulated in an
  *   array.
  */
-function handler(node, prefix) {
-    // `node` is .
-    // `prefix` is .
+function handler(node) {
     // Do something with the node
-    return {
-        node: node,
-        prefix: prefix,
-    };
+    return node;
 }
 
 // Create a matcher to handle some elements.
@@ -37,17 +31,16 @@ var testDoc = "<html><body><div>"
 var matches = matcher.matchAll(testDoc);
 
 // [
+//   "<html><body><div>",
 //   {
-//     "node": {
-//       "nodeName": "test-element",
-//       "attributes": {
-//         "foo": "bar"
-//       },
-//       "outerHTML": "<test-element foo='bar'>foo</test-element>",
-//       "innerHTML": "foo"
+//     "nodeName": "test-element",
+//     "attributes": {
+//       "foo": "bar"
 //     },
-//     "prefix": "<html><body><div>"
-//   }
+//     "outerHTML": "<test-element foo='bar'>foo</test-element>",
+//     "innerHTML": "foo"
+//   },
+//   "</div></body>"
 // ]
 ```
 

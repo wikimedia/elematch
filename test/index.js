@@ -5,9 +5,9 @@ var fs = require('fs');
 
 var ElementMatcher = require('../lib/index');
 
-function id(n, prefix) { return n; }
+function id(n) { return n; }
 var figures = 0;
-function figure(n, prefix) { figures++; return n; }
+function figure(n) { figures++; return n; }
 
 var matcher = new ElementMatcher({
     'test-element': id,
@@ -30,22 +30,26 @@ module.exports = {
     "basic matching": {
         "custom element": function() {
             var nodes = matcher.matchAll(testDoc);
-            var n0 = nodes[0];
-            assert.equal(n0.innerHTML, innerHTML(customElement));
-            assert.equal(n0.outerHTML, customElement);
-            assert.deepEqual(n0.attributes, {
+            assert.equal(nodes[0], testHead);
+            var n1 = nodes[1];
+            assert.equal(n1.innerHTML, innerHTML(customElement));
+            assert.equal(n1.outerHTML, customElement);
+            assert.deepEqual(n1.attributes, {
                 foo: 'bar <figure >',
                 baz: 'booz'
             });
+            assert.equal(nodes[2], testFooter);
         },
         "figure": function() {
             var testElement = '<figure>foo</figure>';
             var doc = testHead + '<div>' + testElement + '</div>' + testFooter;
             var nodes = matcher.matchAll(doc);
-            var n0 = nodes[0];
-            assert.equal(n0.innerHTML, innerHTML(testElement));
-            assert.equal(n0.outerHTML, testElement);
-            assert.deepEqual(n0.attributes, {});
+            assert.equal(nodes[0], testHead + '<div>');
+            var n1 = nodes[1];
+            assert.equal(n1.innerHTML, innerHTML(testElement));
+            assert.equal(n1.outerHTML, testElement);
+            assert.deepEqual(n1.attributes, {});
+            assert.equal(nodes[2], '</div>' + testFooter);
         }
     },
     "performance": {
