@@ -1,4 +1,4 @@
-# elematch [![Build Status](https://travis-ci.org/gwicke/elematch.svg?branch=master)](https://travis-ci.org/gwicke/elematch)
+# elematch [![Build Status](https://travis-ci.org/wikimedia/elematch.svg?branch=master)](https://travis-ci.org/wikimedia/elematch)
 
 Efficient element matching and processing for HTML5 DOM serialized HTML.
 
