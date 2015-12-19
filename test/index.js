@@ -15,24 +15,20 @@ var matcher = new ElementMatcher({
     'figure': figure,
 });
 
-function innerHTML(s) {
-    return s.replace(/^<[^>]+>(.*)<\/[^>]+>$/, '$1');
-}
-
 var testHead = "<doctype html><head><title>hello</title></head>\n";
 var testFooter = "<body></body>";
 var customElement = "<test-element foo='bar <figure >' baz=\"booz\">"
             + "<foo-bar></foo-bar><figure>hello</figure></test-element>";
 
 var testDoc = testHead + customElement + testFooter;
-
+var docWithOverMatch = testHead + customElement + '<div class="a"></div>' + testFooter;
 module.exports = {
     "basic matching": {
         "custom element": function() {
             var nodes = matcher.matchAll(testDoc);
             assert.equal(nodes[0], testHead);
             var n1 = nodes[1];
-            assert.equal(n1.innerHTML, innerHTML(customElement));
+            assert.equal(n1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
             assert.equal(n1.outerHTML, customElement);
             assert.deepEqual(n1.attributes, {
                 foo: 'bar <figure >',
@@ -46,10 +42,22 @@ module.exports = {
             var nodes = matcher.matchAll(doc);
             assert.equal(nodes[0], testHead + '<div>');
             var n1 = nodes[1];
-            assert.equal(n1.innerHTML, innerHTML(testElement));
+            assert.equal(n1.innerHTML, 'foo');
             assert.equal(n1.outerHTML, testElement);
             assert.deepEqual(n1.attributes, {});
             assert.equal(nodes[2], '</div>' + testFooter);
+        },
+        "doesn't overmatch attributes": function() {
+            var nodes = matcher.matchAll(docWithOverMatch);
+            assert.equal(nodes[0], testHead);
+            var n1 = nodes[1];
+            assert.equal(n1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
+            assert.equal(n1.outerHTML, customElement);
+            assert.deepEqual(n1.attributes, {
+                foo: 'bar <figure >',
+                baz: 'booz'
+            });
+            assert.equal(nodes[2], '<div class="a"></div>'+ testFooter);
         }
     },
     "performance": {
