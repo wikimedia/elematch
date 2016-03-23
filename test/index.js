@@ -2,17 +2,24 @@
 
 var assert = require('assert');
 var fs = require('fs');
+var assert = require('assert');
 
 var ElementMatcher = require('../lib/index');
 
 function id(n) { return n; }
 var figures = 0;
+var links = 0;
 function figure(n) { figures++; return n; }
+function link(n) { links++; return n; }
 
 var matcher = new ElementMatcher({
     'test-element': id,
     'foo-bar': id,
     'figure': figure,
+});
+
+var linkMatcher = new ElementMatcher({
+    'a': link,
 });
 
 function innerHTML(s) {
@@ -61,6 +68,18 @@ module.exports = {
                 matcher.matchAll(obama);
             }
             console.log(figures);
+            console.log((Date.now() - startTime) / n + 'ms per match');
+        }
+    },
+    "performance, links": {
+        "Obama": function() {
+            var obama = fs.readFileSync('test/obama.html', 'utf8');
+            var startTime = Date.now();
+            var n = 10;
+            for (var i = 0; i < n; i++) {
+                linkMatcher.matchAll(obama);
+            }
+            console.log(links / n);
             console.log((Date.now() - startTime) / n + 'ms per match');
         }
     }
