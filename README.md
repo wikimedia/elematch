@@ -48,8 +48,8 @@ var matches = matcher.matchAll(testDoc);
 
 Using [the Barack Obama
 article](en.wikipedia.org/api/rest_v1/page/html/Barack_Obama) (1.5mb HTML, part of `npm test`):
-- `elematch` all 32 `<figure>` elements: 2.2ms
-- `elematch` all 1852 links: 34.2ms
+- `elematch` match & replace all 32 `<figure>` elements: 2.2ms
+- `elematch` match & replace all 1852 links: 34.2ms
 - `libxml` DOM parse: 26.3ms
 - `libxml` DOM round-trip: 42.1ms
 - `htmlparser2` DOM parse: 66.8ms
