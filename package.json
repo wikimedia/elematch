@@ -28,5 +28,8 @@
     "htmlparser2": "^3.9.0",
     "libxmljs": "git+https://github.com/gwicke/libxmljs#issue_253",
     "mocha": "^2.3.3"
+  },
+  "dependencies": {
+    "html-entities": "^1.2.0"
   }
 }
