@@ -114,13 +114,43 @@ module.exports = {
 
         }
     },
-    "performance, libxml DOM": {
+    "performance, htmlparser2 DOM round-trip": {
+        "Obama": function() {
+            var dom;
+            var handler = new htmlparser2.DomHandler(function(err, res) {
+                dom = res;
+            });
+            var parser = new htmlparser2.Parser(handler);
+            var obama = fs.readFileSync('test/obama.html', 'utf8');
+            var startTime = Date.now();
+            var n = 10;
+            for (var i = 0; i < n; i++) {
+                parser.parseComplete(obama);
+                htmlparser2.DomUtils.getOuterHTML(dom);
+            }
+            console.log((Date.now() - startTime) / n + 'ms per parse');
+
+        }
+    },
+    "performance, libxml DOM parse": {
         "Obama": function() {
             var obama = fs.readFileSync('test/obama.html', 'utf8');
             var startTime = Date.now();
             var n = 10;
             for (var i = 0; i < n; i++) {
                 libxmljs.parseXml(obama);
+            }
+            console.log((Date.now() - startTime) / n + 'ms per parse');
+        }
+    },
+    "performance, libxml DOM round-trip": {
+        "Obama": function() {
+            var obama = fs.readFileSync('test/obama.html', 'utf8');
+            var startTime = Date.now();
+            var n = 10;
+            for (var i = 0; i < n; i++) {
+                var doc = libxmljs.parseXml(obama);
+                doc.toString();
             }
             console.log((Date.now() - startTime) / n + 'ms per parse');
         }

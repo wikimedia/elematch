@@ -51,7 +51,9 @@ article](en.wikipedia.org/api/rest_v1/page/html/Barack_Obama) (1.5mb HTML, part 
 - `elematch` all 32 `<figure>` elements: 2.2ms
 - `elematch` all 1852 links: 34.2ms
 - `libxml` DOM parse: 26.3ms
+- `libxml` DOM round-trip: 42.1ms
 - `htmlparser2` DOM parse: 66.8ms
+- `htmlparser2` DOM round-trip: 94.9ms
 - `htmlparser2` SAX parse: 70.6ms
 
 Using a smaller (1.1mb) version of the same page:
