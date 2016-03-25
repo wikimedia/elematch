@@ -8,6 +8,7 @@ var ElementMatcher = require('../lib/index');
 
 var htmlparser2 = require('htmlparser2');
 var libxmljs = require("libxmljs");
+var domino = require('domino');
 
 function id(n) { return n; }
 var figures = 0;
@@ -151,6 +152,29 @@ module.exports = {
             for (var i = 0; i < n; i++) {
                 var doc = libxmljs.parseXml(obama);
                 doc.toString();
+            }
+            console.log((Date.now() - startTime) / n + 'ms per parse');
+        }
+    },
+    "performance, domino DOM parse": {
+        "Obama": function() {
+            var obama = fs.readFileSync('test/obama.html', 'utf8');
+            var startTime = Date.now();
+            var n = 10;
+            for (var i = 0; i < n; i++) {
+                var doc = domino.createDocument(obama);
+            }
+            console.log((Date.now() - startTime) / n + 'ms per parse');
+        }
+    },
+    "performance, domino DOM round-trip": {
+        "Obama": function() {
+            var obama = fs.readFileSync('test/obama.html', 'utf8');
+            var startTime = Date.now();
+            var n = 10;
+            for (var i = 0; i < n; i++) {
+                var doc = domino.createDocument(obama);
+                var html = doc.outerHTML;
             }
             console.log((Date.now() - startTime) / n + 'ms per parse');
         }

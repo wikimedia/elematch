@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "mocha --ui exports"
+    "test": "mocha --no-timeouts --ui exports"
   },
   "repository": {
     "type": "git",

@@ -55,6 +55,8 @@ article](en.wikipedia.org/api/rest_v1/page/html/Barack_Obama) (1.5mb HTML, part 
 - `htmlparser2` DOM parse: 66.8ms
 - `htmlparser2` DOM round-trip: 94.9ms
 - `htmlparser2` SAX parse: 70.6ms
+- `domino` DOM parse: 228.9ms
+- `domino` DOM round-trip: 257.2ms
 
 Using a smaller (1.1mb) version of the same page:
 - SAX parse via libxmljs (node) and no-op handlers: 64ms
