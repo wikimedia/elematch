@@ -6,6 +6,9 @@ var assert = require('assert');
 
 var ElementMatcher = require('../lib/index');
 
+var htmlparser2 = require('htmlparser2');
+var libxmljs = require("libxmljs");
+
 function id(n) { return n; }
 var figures = 0;
 var links = 0;
@@ -82,7 +85,46 @@ module.exports = {
             console.log(links / n);
             console.log((Date.now() - startTime) / n + 'ms per match');
         }
-    }
+    },
+    "performance, htmlparser2 Default": {
+        "Obama": function() {
+            var handler = new htmlparser2.DefaultHandler();
+            var parser = new htmlparser2.Parser(handler);
+            var obama = fs.readFileSync('test/obama.html', 'utf8');
+            var startTime = Date.now();
+            var n = 10;
+            for (var i = 0; i < n; i++) {
+                parser.parseComplete(obama);
+            }
+            console.log((Date.now() - startTime) / n + 'ms per parse');
+
+        }
+    },
+    "performance, htmlparser2 DOM": {
+        "Obama": function() {
+            var handler = new htmlparser2.DomHandler();
+            var parser = new htmlparser2.Parser(handler);
+            var obama = fs.readFileSync('test/obama.html', 'utf8');
+            var startTime = Date.now();
+            var n = 10;
+            for (var i = 0; i < n; i++) {
+                parser.parseComplete(obama);
+            }
+            console.log((Date.now() - startTime) / n + 'ms per parse');
+
+        }
+    },
+    "performance, libxml DOM": {
+        "Obama": function() {
+            var obama = fs.readFileSync('test/obama.html', 'utf8');
+            var startTime = Date.now();
+            var n = 10;
+            for (var i = 0; i < n; i++) {
+                libxmljs.parseXml(obama);
+            }
+            console.log((Date.now() - startTime) / n + 'ms per parse');
+        }
+    },
 };
 
 //module.exports.performance.Obama();
