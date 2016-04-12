@@ -31,6 +31,9 @@
     "domino": "^1.0.23"
   },
   "dependencies": {
-    "html-entities": "^1.2.0"
+    "css-selector-parser": "^1.1.0",
+    "html-entities": "^1.2.0",
+    "install": "^0.6.1",
+    "npm": "^3.8.6"
   }
 }

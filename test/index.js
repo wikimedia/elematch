@@ -16,6 +16,8 @@ var links = 0;
 function figure(n) { figures++; return n; }
 function link(n) { links++; return n; }
 
+// XML enscaping rules: https://www.w3.org/TR/xml/#syntax
+
 var matcher = new ElementMatcher({
     'test-element': id,
     'foo-bar': id,
@@ -26,13 +28,17 @@ var linkMatcher = new ElementMatcher({
     'a': link,
 });
 
+var referencesMatcher = new ElementMatcher({
+    'ol[typeof="mw:Extension/references"]': link,
+});
+
 function innerHTML(s) {
     return s.replace(/^<[^>]+>(.*)<\/[^>]+>$/, '$1');
 }
 
-var testHead = "<doctype html><head><title>hello</title></head>\n";
-var testFooter = "<body></body>";
-var customElement = "<test-element foo='bar <figure >' baz=\"booz\">"
+var testHead = "<doctype html><head><title>hello</title></head><body>\n";
+var testFooter = "</body>";
+var customElement = "<test-element foo='bar &lt;figure &gt;' baz=\"booz\">"
             + "<foo-bar></foo-bar><figure>hello</figure></test-element>";
 
 var testDoc = testHead + customElement + testFooter;
@@ -96,6 +102,31 @@ module.exports = {
                 linkMatcher.matchAll(obama);
             }
             console.log(links / n);
+            console.log((Date.now() - startTime) / n + 'ms per match');
+        }
+    },
+    "performance, specific link": {
+        "Obama": function() {
+            var specificLinkMatcher = new ElementMatcher({
+                'a[href="./Riverdale,_Chicago"]': link,
+            });
+            var obama = fs.readFileSync('test/obama.html', 'utf8');
+            var startTime = Date.now();
+            var n = 10;
+            for (var i = 0; i < n; i++) {
+                specificLinkMatcher.matchAll(obama);
+            }
+            console.log((Date.now() - startTime) / n + 'ms per match');
+        }
+    },
+    "performance, references": {
+        "Obama": function() {
+            var obama = fs.readFileSync('test/obama.html', 'utf8');
+            var startTime = Date.now();
+            var n = 10;
+            for (var i = 0; i < n; i++) {
+                referencesMatcher.matchAll(obama);
+            }
             console.log((Date.now() - startTime) / n + 'ms per match');
         }
     },
