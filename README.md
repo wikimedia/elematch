@@ -19,7 +19,7 @@ function handler(node) {
 
 // Create a matcher to handle some elements.
 var matcher = new EleMatch({
-    'test-element': handler,
+    'test-element[foo="bar"]': handler,
     'foo-bar': handler,
 });
 
@@ -28,7 +28,7 @@ var testDoc = "<html><body><div>"
         + "</div></body>";
 
 // Finally, execute it all.
-var matches = matcher.matchAll(testDoc);
+var matches = matcher.matchAll(testDoc, { isXML: false });
 
 // [
 //   "<html><body><div>",
@@ -48,10 +48,14 @@ var matches = matcher.matchAll(testDoc);
 
 Using [the Barack Obama
 article](https://en.wikipedia.org/api/rest_v1/page/html/Barack_Obama) (1.5mb HTML, part of `npm test`):
-- `elematch` match & replace all 32 `<figure>` elements: 1.95ms
-- `elematch` match & replace all 1852 links: 13.9ms
-- `elematch` match & replace a specific link (`a[href="./Riverdale,_Chicago"]`): 1.9ms
-- `elematch` match & replace references section (`ol[typeof="mw:Extension/references"]`): 3.7ms
+- `elematch` match & replace all 32 `<figure>` elements: 1.78ms
+- `elematch` match & replace all 32 `<figure>` elements, isXML: 1.66ms
+- `elematch` match & replace all 1852 links: 19.52ms
+- `elematch` match & replace all 1852 links, isXML: 11.57ms
+- `elematch` match & replace a specific link (`a[href="./Riverdale,_Chicago"]`): 2.0ms
+- `elematch` match & replace a specific link (`a[href="./Riverdale,_Chicago"]`), isXML: 1.96ms
+- `elematch` match & replace references section (`ol[typeof="mw:Extension/references"]`): 3.4ms
+- `elematch` match & replace references section (`ol[typeof="mw:Extension/references"]`), isXML: 3.3ms
 - `libxml` DOM parse: 26.3ms
 - `libxml` DOM round-trip: 42.1ms
 - `htmlparser2` DOM parse: 66.8ms
@@ -76,22 +80,20 @@ regularity of HTML5 and
 [XMLSerializer](https://developer.mozilla.org/en-US/docs/XMLSerializer)
 DOM serialization.
 
-Detailed requirements (all true for XMLSerializer output):
+Detailed requirements (all true for HTML5 and XMLSerializer output):
 
 - **Well-formed DOM**: Handled tags are balanced.
 - **Quoted attributes**: All attribute values are quoted using single or
     double quotes.
-- **`<` escaped as `&lt;`**: This is not true for HTML5-serialized attributes.
-    A previous version suported matching HTML5 without this escaping, at a
-    moderate performance penalty. We can bring this back if there is demand.
 
+### `isXML` option: Faster matching for XML
 
-### Syntax background
+When `matchAll()` is passed `{ isXML: true }` in the second parameter, it will
+exploit the [stricter escaping rules in the XML
+spec](https://www.w3.org/TR/xml/#syntax) to gain some performance.
 
-There are significant differences in how [the XML standard](https://www.w3.org/TR/xml/#syntax
-) and [the HTML5
-standard](https://html.spec.whatwg.org/multipage/syntax.html#escapingString)
-escape strings:
+In particular, it exploits the following difference in how `<` is escaped in
+attributes:
 
 - In XML, `<` is entity-escaped as `&lt;` in all contexts, including
     attributes. `>` *may* be escaped, but this is not required.
@@ -102,5 +104,6 @@ escape strings:
     > occurrences of the """ character by the string "&quot;".
 
 As a consequence, matching XML-serialized HTML can be significantly faster
-than HTML5-serialized HTML. A previous version of `elematch` supported this,
-and showed roughly a ~15% performance penalty.
+than HTML5-serialized HTML, as there is no need to parse each tag & attribute
+in order to avoid matching bare `<` in attributes when looking for the next
+interesting tag.

@@ -24,10 +24,6 @@ var matcher = new ElementMatcher({
     'figure': figure,
 });
 
-var linkMatcher = new ElementMatcher({
-    'a': link,
-});
-
 var referencesMatcher = new ElementMatcher({
     'ol[typeof="mw:Extension/references"]': link,
 });
@@ -81,13 +77,25 @@ module.exports = {
             assert.equal(nodes[2], '<div class="a"></div>'+ testFooter);
         }
     },
-    "performance": {
+    "performance, figures": {
         "Obama": function() {
             var obama = fs.readFileSync('test/obama.html', 'utf8');
             var startTime = Date.now();
-            var n = 20;
+            var n = 200;
             for (var i = 0; i < n; i++) {
                 matcher.matchAll(obama);
+            }
+            console.log(figures);
+            console.log((Date.now() - startTime) / n + 'ms per match');
+        }
+    },
+    "performance, figures, XML mode": {
+        "Obama": function() {
+            var obama = fs.readFileSync('test/obama.html', 'utf8');
+            var startTime = Date.now();
+            var n = 200;
+            for (var i = 0; i < n; i++) {
+                matcher.matchAll(obama, { isXML: true });
             }
             console.log(figures);
             console.log((Date.now() - startTime) / n + 'ms per match');
@@ -97,9 +105,28 @@ module.exports = {
         "Obama": function() {
             var obama = fs.readFileSync('test/obama.html', 'utf8');
             var startTime = Date.now();
-            var n = 10;
+            var linkMatcher = new ElementMatcher({
+                'a': link,
+            });
+            var n = 100;
             for (var i = 0; i < n; i++) {
                 linkMatcher.matchAll(obama);
+            }
+            console.log(links / n);
+            console.log((Date.now() - startTime) / n + 'ms per match');
+        }
+    },
+    "performance, links, XML mode": {
+        "Obama": function() {
+            var obama = fs.readFileSync('test/obama.html', 'utf8');
+            links = 0;
+            var startTime = Date.now();
+            var linkMatcher = new ElementMatcher({
+                'a': link,
+            });
+            var n = 100;
+            for (var i = 0; i < n; i++) {
+                linkMatcher.matchAll(obama, { isXML: true });
             }
             console.log(links / n);
             console.log((Date.now() - startTime) / n + 'ms per match');
@@ -112,9 +139,23 @@ module.exports = {
             });
             var obama = fs.readFileSync('test/obama.html', 'utf8');
             var startTime = Date.now();
-            var n = 10;
+            var n = 50;
             for (var i = 0; i < n; i++) {
                 specificLinkMatcher.matchAll(obama);
+            }
+            console.log((Date.now() - startTime) / n + 'ms per match');
+        }
+    },
+    "performance, specific link, XML mode": {
+        "Obama": function() {
+            var specificLinkMatcher = new ElementMatcher({
+                'a[href="./Riverdale,_Chicago"]': link,
+            });
+            var obama = fs.readFileSync('test/obama.html', 'utf8');
+            var startTime = Date.now();
+            var n = 50;
+            for (var i = 0; i < n; i++) {
+                specificLinkMatcher.matchAll(obama, { isXML: true });
             }
             console.log((Date.now() - startTime) / n + 'ms per match');
         }
@@ -126,6 +167,17 @@ module.exports = {
             var n = 10;
             for (var i = 0; i < n; i++) {
                 referencesMatcher.matchAll(obama);
+            }
+            console.log((Date.now() - startTime) / n + 'ms per match');
+        }
+    },
+    "performance, references, isXML": {
+        "Obama": function() {
+            var obama = fs.readFileSync('test/obama.html', 'utf8');
+            var startTime = Date.now();
+            var n = 10;
+            for (var i = 0; i < n; i++) {
+                referencesMatcher.matchAll(obama, { isXML: true });
             }
             console.log((Date.now() - startTime) / n + 'ms per match');
         }
