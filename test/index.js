@@ -104,6 +104,7 @@ module.exports = {
     "performance, links": {
         "Obama": function() {
             var obama = fs.readFileSync('test/obama.html', 'utf8');
+            links = 0;
             var startTime = Date.now();
             var linkMatcher = new ElementMatcher({
                 'a': link,
@@ -153,7 +154,7 @@ module.exports = {
             });
             var obama = fs.readFileSync('test/obama.html', 'utf8');
             var startTime = Date.now();
-            var n = 50;
+            var n = 100;
             for (var i = 0; i < n; i++) {
                 specificLinkMatcher.matchAll(obama, { isXML: true });
             }
@@ -164,7 +165,7 @@ module.exports = {
         "Obama": function() {
             var obama = fs.readFileSync('test/obama.html', 'utf8');
             var startTime = Date.now();
-            var n = 10;
+            var n = 100;
             for (var i = 0; i < n; i++) {
                 referencesMatcher.matchAll(obama);
             }

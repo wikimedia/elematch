@@ -48,12 +48,12 @@ var matches = matcher.matchAll(testDoc, { isXML: false });
 
 Using [the Barack Obama
 article](https://en.wikipedia.org/api/rest_v1/page/html/Barack_Obama) (1.5mb HTML, part of `npm test`):
-- `elematch` match & replace all 32 `<figure>` elements: 1.78ms
-- `elematch` match & replace all 32 `<figure>` elements, isXML: 1.66ms
-- `elematch` match & replace all 1852 links: 19.52ms
-- `elematch` match & replace all 1852 links, isXML: 11.57ms
-- `elematch` match & replace a specific link (`a[href="./Riverdale,_Chicago"]`): 2.0ms
-- `elematch` match & replace a specific link (`a[href="./Riverdale,_Chicago"]`), isXML: 1.96ms
+- `elematch` match & replace all 32 `<figure>` elements: 1.74ms
+- `elematch` match & replace all 32 `<figure>` elements, isXML: 1.65ms
+- `elematch` match & replace all 1852 links: 12.78ms
+- `elematch` match & replace all 1852 links, isXML: 11.14ms
+- `elematch` match & replace a specific link (`a[href="./Riverdale,_Chicago"]`): 1.92ms
+- `elematch` match & replace a specific link (`a[href="./Riverdale,_Chicago"]`), isXML: 1.89ms
 - `elematch` match & replace references section (`ol[typeof="mw:Extension/references"]`): 3.4ms
 - `elematch` match & replace references section (`ol[typeof="mw:Extension/references"]`), isXML: 3.3ms
 - `libxml` DOM parse: 26.3ms
