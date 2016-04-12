@@ -48,8 +48,10 @@ var matches = matcher.matchAll(testDoc);
 
 Using [the Barack Obama
 article](https://en.wikipedia.org/api/rest_v1/page/html/Barack_Obama) (1.5mb HTML, part of `npm test`):
-- `elematch` match & replace all 32 `<figure>` elements: 2.2ms
-- `elematch` match & replace all 1852 links: 34.2ms
+- `elematch` match & replace all 32 `<figure>` elements: 1.95ms
+- `elematch` match & replace all 1852 links: 13.9ms
+- `elematch` match & replace a specific link (`a[href="./Riverdale,_Chicago"]`): 1.9ms
+- `elematch` match & replace references section (`ol[typeof="mw:Extension/references"]`): 3.7ms
 - `libxml` DOM parse: 26.3ms
 - `libxml` DOM round-trip: 42.1ms
 - `htmlparser2` DOM parse: 66.8ms
@@ -74,20 +76,31 @@ regularity of HTML5 and
 [XMLSerializer](https://developer.mozilla.org/en-US/docs/XMLSerializer)
 DOM serialization.
 
-Detailed requirements (all true for HTML5 fragment serializer / XMLSerializer
-output):
+Detailed requirements (all true for XMLSerializer output):
 
 - **Well-formed DOM**: Handled tags are balanced.
 - **Quoted attributes**: All attribute values are quoted using single or
-    double quotes. 
+    double quotes.
+- **`<` escaped as `&lt;`**: This is not true for HTML5-serialized attributes.
+    A previous version suported matching HTML5 without this escaping, at a
+    moderate performance penalty. We can bring this back if there is demand.
 
-### Possible speed-up for XMLSerializer output
 
-The current version pays a ~15% performance penalty for supporting unadorned
-(not entity-escaped) angle brackets (`<`) in attribute values. Such escaping
-[is guaranteed for XMLSerializer
-output](http://www.w3.org/TR/DOM-Parsing/#dfn-concept-serialize-attr-value)
-[as emitted for example by
-Parsoid](https://github.com/wikimedia/parsoid/blob/master/lib/XMLSerializer.js),
-but [is not required in the HTML5
-spec](http://www.w3.org/TR/html5/syntax.html#serializing-html-fragments).
+### Syntax background
+
+There are significant differences in how [the XML standard](https://www.w3.org/TR/xml/#syntax
+) and [the HTML5
+standard](https://html.spec.whatwg.org/multipage/syntax.html#escapingString)
+escape strings:
+
+- In XML, `<` is entity-escaped as `&lt;` in all contexts, including
+    attributes. `>` *may* be escaped, but this is not required.
+- In HTML5, bare `<` are permitted in attributes. Specifically, [the spec only
+    requires escaping of `"` within
+    attributes](https://html.spec.whatwg.org/multipage/syntax.html#escapingString):
+    > If the algorithm was invoked in the attribute mode, replace any
+    > occurrences of the """ character by the string "&quot;".
+
+As a consequence, matching XML-serialized HTML can be significantly faster
+than HTML5-serialized HTML. A previous version of `elematch` supported this,
+and showed roughly a ~15% performance penalty.
