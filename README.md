@@ -19,7 +19,7 @@ function handler(node) {
 
 // Create a matcher to handle some elements.
 var matcher = new EleMatch({
-    'test-element': handler,
+    'test-element[foo="bar"]': handler,
     'foo-bar': handler,
 });
 
@@ -28,7 +28,7 @@ var testDoc = "<html><body><div>"
         + "</div></body>";
 
 // Finally, execute it all.
-var matches = matcher.matchAll(testDoc);
+var matches = matcher.matchAll(testDoc, { isXML: false });
 
 // [
 //   "<html><body><div>",
@@ -48,8 +48,14 @@ var matches = matcher.matchAll(testDoc);
 
 Using [the Barack Obama
 article](https://en.wikipedia.org/api/rest_v1/page/html/Barack_Obama) (1.5mb HTML, part of `npm test`):
-- `elematch` match & replace all 32 `<figure>` elements: 2.2ms
-- `elematch` match & replace all 1852 links: 34.2ms
+- `elematch` match & replace all 32 `<figure>` elements: 1.74ms
+- `elematch` match & replace all 32 `<figure>` elements, isXML: 1.65ms
+- `elematch` match & replace all 1852 links: 12.78ms
+- `elematch` match & replace all 1852 links, isXML: 11.14ms
+- `elematch` match & replace a specific link (`a[href="./Riverdale,_Chicago"]`): 1.92ms
+- `elematch` match & replace a specific link (`a[href="./Riverdale,_Chicago"]`), isXML: 1.89ms
+- `elematch` match & replace references section (`ol[typeof="mw:Extension/references"]`): 3.4ms
+- `elematch` match & replace references section (`ol[typeof="mw:Extension/references"]`), isXML: 3.3ms
 - `libxml` DOM parse: 26.3ms
 - `libxml` DOM round-trip: 42.1ms
 - `htmlparser2` DOM parse: 66.8ms
@@ -74,20 +80,30 @@ regularity of HTML5 and
 [XMLSerializer](https://developer.mozilla.org/en-US/docs/XMLSerializer)
 DOM serialization.
 
-Detailed requirements (all true for HTML5 fragment serializer / XMLSerializer
-output):
+Detailed requirements (all true for HTML5 and XMLSerializer output):
 
 - **Well-formed DOM**: Handled tags are balanced.
 - **Quoted attributes**: All attribute values are quoted using single or
-    double quotes. 
+    double quotes.
 
-### Possible speed-up for XMLSerializer output
+### `isXML` option: Faster matching for XML
 
-The current version pays a ~15% performance penalty for supporting unadorned
-(not entity-escaped) angle brackets (`<`) in attribute values. Such escaping
-[is guaranteed for XMLSerializer
-output](http://www.w3.org/TR/DOM-Parsing/#dfn-concept-serialize-attr-value)
-[as emitted for example by
-Parsoid](https://github.com/wikimedia/parsoid/blob/master/lib/XMLSerializer.js),
-but [is not required in the HTML5
-spec](http://www.w3.org/TR/html5/syntax.html#serializing-html-fragments).
+When `matchAll()` is passed `{ isXML: true }` in the second parameter, it will
+exploit the [stricter escaping rules in the XML
+spec](https://www.w3.org/TR/xml/#syntax) to gain some performance.
+
+In particular, it exploits the following difference in how `<` is escaped in
+attributes:
+
+- In XML, `<` is entity-escaped as `&lt;` in all contexts, including
+    attributes. `>` *may* be escaped, but this is not required.
+- In HTML5, bare `<` are permitted in attributes. Specifically, [the spec only
+    requires escaping of `"` within
+    attributes](https://html.spec.whatwg.org/multipage/syntax.html#escapingString):
+    > If the algorithm was invoked in the attribute mode, replace any
+    > occurrences of the """ character by the string "&quot;".
+
+As a consequence, matching XML-serialized HTML can be significantly faster
+than HTML5-serialized HTML, as there is no need to parse each tag & attribute
+in order to avoid matching bare `<` in attributes when looking for the next
+interesting tag.
