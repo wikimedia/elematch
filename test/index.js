@@ -18,7 +18,7 @@ function link(n) { links++; return n; }
 
 // XML enscaping rules: https://www.w3.org/TR/xml/#syntax
 
-var matcher = new ElementMatcher({
+const matcher = new ElementMatcher({
     'test-element': id,
     'foo-bar': id,
     'figure': figure,
@@ -42,253 +42,299 @@ var docWithOverMatch = testHead + customElement + '<div class="a"></div>' + test
 module.exports = {
     "basic matching": {
         "custom element": function() {
-            var nodes = matcher.matchAll(testDoc);
-            assert.equal(nodes[0], testHead);
-            var n1 = nodes[1];
-            assert.equal(n1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
-            assert.equal(n1.outerHTML, customElement);
-            assert.deepEqual(n1.attributes, {
+            const match = matcher.matchAll(testDoc);
+            const matches = match.matches;
+            assert.equal(matches[0], testHead);
+            const m1 = matches[1];
+            assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
+            assert.equal(m1.outerHTML, customElement);
+            assert.deepEqual(m1.attributes, {
                 foo: 'bar <figure >',
                 baz: 'booz baax boooz'
             });
-            assert.equal(nodes[2], testFooter);
+            assert.equal(matches[2], testFooter);
         },
         "figure": function() {
             var testElement = '<figure>foo</figure>';
             var doc = testHead + '<div>' + testElement + '</div>' + testFooter;
-            var nodes = matcher.matchAll(doc);
-            assert.equal(nodes[0], testHead + '<div>');
-            var n1 = nodes[1];
-            assert.equal(n1.innerHTML, 'foo');
-            assert.equal(n1.outerHTML, testElement);
-            assert.deepEqual(n1.attributes, {});
-            assert.equal(nodes[2], '</div>' + testFooter);
+            const match = matcher.matchAll(doc);
+            const matches = match.matches;
+            assert.equal(matches[0], testHead + '<div>');
+            const m1 = matches[1];
+            assert.equal(m1.innerHTML, 'foo');
+            assert.equal(m1.outerHTML, testElement);
+            assert.deepEqual(m1.attributes, {});
+            assert.equal(matches[2], '</div>' + testFooter);
         },
         "doesn't overmatch attributes": function() {
-            var nodes = matcher.matchAll(docWithOverMatch);
-            assert.equal(nodes[0], testHead);
-            var n1 = nodes[1];
-            assert.equal(n1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
-            assert.equal(n1.outerHTML, customElement);
-            assert.deepEqual(n1.attributes, {
+            const match = matcher.matchAll(docWithOverMatch);
+            const matches = match.matches;
+            assert.equal(matches[0], testHead);
+            const m1 = matches[1];
+            assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
+            assert.equal(m1.outerHTML, customElement);
+            assert.deepEqual(m1.attributes, {
                 foo: 'bar <figure >',
                 baz: 'booz baax boooz'
             });
-            assert.equal(nodes[2], '<div class="a"></div>'+ testFooter);
+            assert.equal(matches[2], '<div class="a"></div>'+ testFooter);
+        },
+    },
+    "incomplete buffer": {
+        "custom element": function() {
+            const truncatedCustomElement = customElement.substr(0, customElement.length - 2);
+            var doc = testHead + truncatedCustomElement;
+            const match = matcher.matchAll(doc);
+            const matches = match.matches;
+            assert.equal(matches[0], testHead);
+            if (matches.length > 1) {
+                throw new Error("Found more matches than expected!");
+            }
+            assert.equal(match.remainder, truncatedCustomElement);
+        },
+        "incomplete other tag, after tag name": function() {
+            var testElement = '<figure>foo</figure>';
+            var doc = testHead + '<div>' + testElement + '</div><othertag ';
+            const match = matcher.matchAll(doc);
+            const matches = match.matches;
+            assert.equal(matches[0], testHead + '<div>');
+            const m1 = matches[1];
+            assert.equal(m1.innerHTML, 'foo');
+            assert.equal(m1.outerHTML, testElement);
+            assert.deepEqual(m1.attributes, {});
+            assert.equal(match.remainder, '<othertag ');
+        },
+        "incomplete other tag, in attribute": function() {
+            var testElement = '<figure>foo</figure>';
+            var doc = testHead + '<div>' + testElement + '</div><othertag foo="bar';
+            const match = matcher.matchAll(doc);
+            const matches = match.matches;
+            assert.equal(matches[0], testHead + '<div>');
+            const m1 = matches[1];
+            assert.equal(m1.innerHTML, 'foo');
+            assert.equal(m1.outerHTML, testElement);
+            assert.deepEqual(m1.attributes, {});
+            assert.equal(match.remainder, '<othertag foo="bar');
         },
     },
     'presence': {
         "attribute presence": function() {
-            var attribMatcher = new ElementMatcher({
+            const attribMatcher = new ElementMatcher({
                 'test-element[foo]': id,
             });
-            var nodes = attribMatcher.matchAll(testDoc);
-            assert.equal(nodes[0], testHead);
-            var n1 = nodes[1];
-            assert.equal(n1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
-            assert.equal(n1.outerHTML, customElement);
-            assert.deepEqual(n1.attributes, {
+            const match = attribMatcher.matchAll(testDoc);
+            const matches = match.matches;
+            assert.equal(matches[0], testHead);
+            const m1 = matches[1];
+            assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
+            assert.equal(m1.outerHTML, customElement);
+            assert.deepEqual(m1.attributes, {
                 foo: 'bar <figure >',
                 baz: 'booz baax boooz'
             });
-            assert.equal(nodes[2], testFooter);
+            assert.equal(matches[2], testFooter);
         },
         "attribute presence, no match": function() {
-            var attribMatcher = new ElementMatcher({
+            const attribMatcher = new ElementMatcher({
                 'test-element[bar]': id,
             });
-            var nodes = attribMatcher.matchAll(testDoc);
-            assert.equal(nodes[0], testDoc);
+            const match = attribMatcher.matchAll(testDoc);
+            const matches = match.matches;
+            assert.equal(matches[0], testDoc);
         },
     },
     'equality': {
         "match": function() {
-            var attribMatcher = new ElementMatcher({
+            const attribMatcher = new ElementMatcher({
                 'test-element[foo="bar <figure >"]': id,
             });
-            var nodes = attribMatcher.matchAll(testDoc);
-            assert.equal(nodes[0], testHead);
-            var n1 = nodes[1];
-            assert.equal(n1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
-            assert.equal(n1.outerHTML, customElement);
-            assert.deepEqual(n1.attributes, {
+            const match = attribMatcher.matchAll(testDoc);
+            const matches = match.matches;
+            assert.equal(matches[0], testHead);
+            const m1 = matches[1];
+            assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
+            assert.equal(m1.outerHTML, customElement);
+            assert.deepEqual(m1.attributes, {
                 foo: 'bar <figure >',
                 baz: 'booz baax boooz'
             });
-            assert.equal(nodes[2], testFooter);
+            assert.equal(matches[2], testFooter);
         },
         "no value match": function() {
-            var attribMatcher = new ElementMatcher({
+            const attribMatcher = new ElementMatcher({
                 'test-element[foo="boo"]': id,
             });
-            var nodes = attribMatcher.matchAll(testDoc);
-            assert.equal(nodes[0], testDoc);
+            const match = attribMatcher.matchAll(testDoc);
+            const matches = match.matches;
+            assert.equal(matches[0], testDoc);
         },
         "no attribute of name": function() {
-            var attribMatcher = new ElementMatcher({
+            const attribMatcher = new ElementMatcher({
                 'test-element[bar="booz"]': id,
             });
-            var nodes = attribMatcher.matchAll(testDoc);
-            assert.equal(nodes[0], testDoc);
+            const match = attribMatcher.matchAll(testDoc);
+            const matches = match.matches;
+            assert.equal(matches[0], testDoc);
         },
     },
     'prefix': {
         "match": function() {
-            var attribMatcher = new ElementMatcher({
+            const attribMatcher = new ElementMatcher({
                 'test-element[foo^="bar <figure"]': id,
             });
-            var nodes = attribMatcher.matchAll(testDoc);
-            assert.equal(nodes[0], testHead);
-            var n1 = nodes[1];
-            assert.equal(n1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
-            assert.equal(n1.outerHTML, customElement);
-            assert.deepEqual(n1.attributes, {
+            const match = attribMatcher.matchAll(testDoc);
+            const matches = match.matches;
+            assert.equal(matches[0], testHead);
+            const m1 = matches[1];
+            assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
+            assert.equal(m1.outerHTML, customElement);
+            assert.deepEqual(m1.attributes, {
                 foo: 'bar <figure >',
                 baz: 'booz baax boooz'
             });
-            assert.equal(nodes[2], testFooter);
+            assert.equal(matches[2], testFooter);
         },
         "no value match": function() {
-            var attribMatcher = new ElementMatcher({
+            const attribMatcher = new ElementMatcher({
                 'test-element[foo^="boo"]': id,
             });
-            var nodes = attribMatcher.matchAll(testDoc);
-            assert.equal(nodes[0], testDoc);
+            const match = attribMatcher.matchAll(testDoc);
+            const matches = match.matches;
+            assert.equal(matches[0], testDoc);
         },
         "no attribute of name": function() {
-            var attribMatcher = new ElementMatcher({
+            const attribMatcher = new ElementMatcher({
                 'test-element[bar^="booz"]': id,
             });
-            var nodes = attribMatcher.matchAll(testDoc);
-            assert.equal(nodes[0], testDoc);
+            const match = attribMatcher.matchAll(testDoc);
+            const matches = match.matches;
+            assert.equal(matches[0], testDoc);
         },
     },
     'space-delimited attribute': {
         "match": function() {
-            var attribMatcher = new ElementMatcher({
+            const attribMatcher = new ElementMatcher({
                 'test-element[foo~="bar"]': id,
             });
-            var nodes = attribMatcher.matchAll(testDoc);
-            assert.equal(nodes[0], testHead);
-            var n1 = nodes[1];
-            assert.equal(n1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
-            assert.equal(n1.outerHTML, customElement);
-            assert.deepEqual(n1.attributes, {
+            const match = attribMatcher.matchAll(testDoc);
+            const matches = match.matches;
+            assert.equal(matches[0], testHead);
+            const m1 = matches[1];
+            assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
+            assert.equal(m1.outerHTML, customElement);
+            assert.deepEqual(m1.attributes, {
                 foo: 'bar <figure >',
                 baz: 'booz baax boooz'
             });
-            assert.equal(nodes[2], testFooter);
+            assert.equal(matches[2], testFooter);
         },
         "match, middle": function() {
-            var attribMatcher = new ElementMatcher({
+            const attribMatcher = new ElementMatcher({
                 'test-element[baz~="baax"]': id,
             });
-            var nodes = attribMatcher.matchAll(testDoc);
-            assert.equal(nodes[0], testHead);
-            var n1 = nodes[1];
-            assert.equal(n1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
-            assert.equal(n1.outerHTML, customElement);
-            assert.deepEqual(n1.attributes, {
+            const match = attribMatcher.matchAll(testDoc);
+            const matches = match.matches;
+            assert.equal(matches[0], testHead);
+            const m1 = matches[1];
+            assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
+            assert.equal(m1.outerHTML, customElement);
+            assert.deepEqual(m1.attributes, {
                 foo: 'bar <figure >',
                 baz: 'booz baax boooz'
             });
-            assert.equal(nodes[2], testFooter);
+            assert.equal(matches[2], testFooter);
         },
         "match, end": function() {
-            var attribMatcher = new ElementMatcher({
+            const attribMatcher = new ElementMatcher({
                 'test-element[baz~="boooz"]': id,
             });
-            var nodes = attribMatcher.matchAll(testDoc);
-            assert.equal(nodes[0], testHead);
-            var n1 = nodes[1];
-            assert.equal(n1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
-            assert.equal(n1.outerHTML, customElement);
-            assert.deepEqual(n1.attributes, {
+            const match = attribMatcher.matchAll(testDoc);
+            const matches = match.matches;
+            assert.equal(matches[0], testHead);
+            const m1 = matches[1];
+            assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
+            assert.equal(m1.outerHTML, customElement);
+            assert.deepEqual(m1.attributes, {
                 foo: 'bar <figure >',
                 baz: 'booz baax boooz'
             });
-            assert.equal(nodes[2], testFooter);
+            assert.equal(matches[2], testFooter);
         },
         "no value match": function() {
-            var attribMatcher = new ElementMatcher({
+            const attribMatcher = new ElementMatcher({
                 'test-element[foo~="boo"]': id,
             });
-            var nodes = attribMatcher.matchAll(testDoc);
-            assert.equal(nodes[0], testDoc);
+            const match = attribMatcher.matchAll(testDoc);
+            const matches = match.matches;
+            assert.equal(matches[0], testDoc);
         },
         "no attribute of name": function() {
-            var attribMatcher = new ElementMatcher({
+            const attribMatcher = new ElementMatcher({
                 'test-element[bar~="booz"]': id,
             });
-            var nodes = attribMatcher.matchAll(testDoc);
-            assert.equal(nodes[0], testDoc);
+            const match = attribMatcher.matchAll(testDoc);
+            const matches = match.matches;
+            assert.equal(matches[0], testDoc);
         },
     },
     'suffix': {
         "match": function() {
-            var attribMatcher = new ElementMatcher({
+            const attribMatcher = new ElementMatcher({
                 'test-element[foo$="figure >"]': id,
             });
-            var nodes = attribMatcher.matchAll(testDoc);
-            assert.equal(nodes[0], testHead);
-            var n1 = nodes[1];
-            assert.equal(n1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
-            assert.equal(n1.outerHTML, customElement);
-            assert.deepEqual(n1.attributes, {
+            const match = attribMatcher.matchAll(testDoc);
+            const matches = match.matches;
+            assert.equal(matches[0], testHead);
+            const m1 = matches[1];
+            assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
+            assert.equal(m1.outerHTML, customElement);
+            assert.deepEqual(m1.attributes, {
                 foo: 'bar <figure >',
                 baz: 'booz baax boooz'
             });
-            assert.equal(nodes[2], testFooter);
+            assert.equal(matches[2], testFooter);
         },
         "another match": function() {
-            var attribMatcher = new ElementMatcher({
+            const attribMatcher = new ElementMatcher({
                 'test-element[baz$=" boooz"]': id,
             });
-            var nodes = attribMatcher.matchAll(testDoc);
-            assert.equal(nodes[0], testHead);
-            var n1 = nodes[1];
-            assert.equal(n1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
-            assert.equal(n1.outerHTML, customElement);
-            assert.deepEqual(n1.attributes, {
+            const match = attribMatcher.matchAll(testDoc);
+            const matches = match.matches;
+            assert.equal(matches[0], testHead);
+            const m1 = matches[1];
+            assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
+            assert.equal(m1.outerHTML, customElement);
+            assert.deepEqual(m1.attributes, {
                 foo: 'bar <figure >',
                 baz: 'booz baax boooz'
             });
-            assert.equal(nodes[2], testFooter);
+            assert.equal(matches[2], testFooter);
         },
         "no value match": function() {
-            var attribMatcher = new ElementMatcher({
+            const attribMatcher = new ElementMatcher({
                 'test-element[foo$="figure"]': id,
             });
-            var nodes = attribMatcher.matchAll(testDoc);
-            assert.equal(nodes[0], testDoc);
+            const match = attribMatcher.matchAll(testDoc);
+            const matches = match.matches;
+            assert.equal(matches[0], testDoc);
         },
         "space-delim attribute match, no attribute of name": function() {
-            var attribMatcher = new ElementMatcher({
+            const attribMatcher = new ElementMatcher({
                 'test-element[bar~="boooz"]': id,
             });
-            var nodes = attribMatcher.matchAll(testDoc);
-            assert.equal(nodes[0], testDoc);
+            const match = attribMatcher.matchAll(testDoc);
+            const matches = match.matches;
+            assert.equal(matches[0], testDoc);
         },
     },
     "performance, figures": {
         "Obama": function() {
             var obama = fs.readFileSync('test/obama.html', 'utf8');
             var startTime = Date.now();
+            figures = 0;
             var n = 200;
             for (var i = 0; i < n; i++) {
                 matcher.matchAll(obama);
-            }
-            console.log(figures);
-            console.log((Date.now() - startTime) / n + 'ms per match');
-        }
-    },
-    "performance, figures, XML mode": {
-        "Obama": function() {
-            var obama = fs.readFileSync('test/obama.html', 'utf8');
-            var startTime = Date.now();
-            var n = 200;
-            for (var i = 0; i < n; i++) {
-                matcher.matchAll(obama, { isXML: true });
             }
             console.log(figures);
             console.log((Date.now() - startTime) / n + 'ms per match');
@@ -310,22 +356,6 @@ module.exports = {
             console.log((Date.now() - startTime) / n + 'ms per match');
         }
     },
-    "performance, links, XML mode": {
-        "Obama": function() {
-            var obama = fs.readFileSync('test/obama.html', 'utf8');
-            links = 0;
-            var startTime = Date.now();
-            var linkMatcher = new ElementMatcher({
-                'a': link,
-            });
-            var n = 100;
-            for (var i = 0; i < n; i++) {
-                linkMatcher.matchAll(obama, { isXML: true });
-            }
-            console.log(links / n);
-            console.log((Date.now() - startTime) / n + 'ms per match');
-        }
-    },
     "performance, specific link": {
         "Obama": function() {
             var specificLinkMatcher = new ElementMatcher({
@@ -340,20 +370,6 @@ module.exports = {
             console.log((Date.now() - startTime) / n + 'ms per match');
         }
     },
-    "performance, specific link, XML mode": {
-        "Obama": function() {
-            var specificLinkMatcher = new ElementMatcher({
-                'a[href="./Riverdale,_Chicago"]': link,
-            });
-            var obama = fs.readFileSync('test/obama.html', 'utf8');
-            var startTime = Date.now();
-            var n = 100;
-            for (var i = 0; i < n; i++) {
-                specificLinkMatcher.matchAll(obama, { isXML: true });
-            }
-            console.log((Date.now() - startTime) / n + 'ms per match');
-        }
-    },
     "performance, references": {
         "Obama": function() {
             var obama = fs.readFileSync('test/obama.html', 'utf8');
@@ -361,17 +377,6 @@ module.exports = {
             var n = 100;
             for (var i = 0; i < n; i++) {
                 referencesMatcher.matchAll(obama);
-            }
-            console.log((Date.now() - startTime) / n + 'ms per match');
-        }
-    },
-    "performance, references, isXML": {
-        "Obama": function() {
-            var obama = fs.readFileSync('test/obama.html', 'utf8');
-            var startTime = Date.now();
-            var n = 10;
-            for (var i = 0; i < n; i++) {
-                referencesMatcher.matchAll(obama, { isXML: true });
             }
             console.log((Date.now() - startTime) / n + 'ms per match');
         }
