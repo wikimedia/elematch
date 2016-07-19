@@ -16,12 +16,14 @@ var links = 0;
 function figure(n) { figures++; return n; }
 function link(n) { links++; return n; }
 
-function bench() {
-    var obama = fs.readFileSync('test/obama.html', 'utf8');
+function bench(filename) {
+    console.log('##', filename, '(all links)');
+    var obama = fs.readFileSync(filename, 'utf8');
     var startTime = Date.now();
     var linkMatcher = new ElementMatcher({
         'a': link,
     });
+    links = 0;
     var n = 200;
     for (var i = 0; i < n; i++) {
         linkMatcher.matchAll(obama);
@@ -31,5 +33,6 @@ function bench() {
 }
 
 if (!module.parent) {
-    bench();
+    bench('test/obama.html');
+    bench('test/Main_Page.html');
 }
