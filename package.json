@@ -2,7 +2,7 @@
   "name": "elematch",
   "version": "0.1.1",
   "description": "Efficient HTML elment matching and -processing",
-  "main": "lib/index.js",
+  "main": "index.js",
   "directories": {
     "test": "test"
   },
@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "css-selector-parser": "^1.1.0",
-    "html-entities": "^1.2.0"
+    "html-entities": "^1.2.0",
+    "web-streams-polyfill": "^1.2.2"
   }
 }
