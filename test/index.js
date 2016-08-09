@@ -42,7 +42,7 @@ var docWithOverMatch = testHead + customElement + '<div class="a"></div>' + test
 module.exports = {
     "basic matching": {
         "custom element": function() {
-            const match = matcher.matchAll(testDoc);
+            const match = matcher.match(testDoc);
             const matches = match.matches;
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
@@ -57,7 +57,7 @@ module.exports = {
         "figure": function() {
             var testElement = '<figure>foo</figure>';
             var doc = testHead + '<div>' + testElement + '</div>' + testFooter;
-            const match = matcher.matchAll(doc);
+            const match = matcher.match(doc);
             const matches = match.matches;
             assert.equal(matches[0], testHead + '<div>');
             const m1 = matches[1];
@@ -67,7 +67,7 @@ module.exports = {
             assert.equal(matches[2], '</div>' + testFooter);
         },
         "doesn't overmatch attributes": function() {
-            const match = matcher.matchAll(docWithOverMatch);
+            const match = matcher.match(docWithOverMatch);
             const matches = match.matches;
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
@@ -84,7 +84,7 @@ module.exports = {
         "custom element": function() {
             const truncatedCustomElement = customElement.substr(0, customElement.length - 2);
             var doc = testHead + truncatedCustomElement;
-            const match = matcher.matchAll(doc);
+            const match = matcher.match(doc);
             const matches = match.matches;
             assert.equal(matches[0], testHead);
             if (matches.length > 1) {
@@ -95,7 +95,7 @@ module.exports = {
         "incomplete other tag, after tag name": function() {
             var testElement = '<figure>foo</figure>';
             var doc = testHead + '<div>' + testElement + '</div><othertag ';
-            const match = matcher.matchAll(doc);
+            const match = matcher.match(doc);
             const matches = match.matches;
             assert.equal(matches[0], testHead + '<div>');
             const m1 = matches[1];
@@ -107,7 +107,7 @@ module.exports = {
         "incomplete other tag, in attribute": function() {
             var testElement = '<figure>foo</figure>';
             var doc = testHead + '<div>' + testElement + '</div><othertag foo="bar';
-            const match = matcher.matchAll(doc);
+            const match = matcher.match(doc);
             const matches = match.matches;
             assert.equal(matches[0], testHead + '<div>');
             const m1 = matches[1];
@@ -122,7 +122,7 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[foo]': id,
             });
-            const match = attribMatcher.matchAll(testDoc);
+            const match = attribMatcher.match(testDoc);
             const matches = match.matches;
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
@@ -138,7 +138,7 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[bar]': id,
             });
-            const match = attribMatcher.matchAll(testDoc);
+            const match = attribMatcher.match(testDoc);
             const matches = match.matches;
             assert.equal(matches[0], testDoc);
         },
@@ -148,7 +148,7 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[foo="bar <figure >"]': id,
             });
-            const match = attribMatcher.matchAll(testDoc);
+            const match = attribMatcher.match(testDoc);
             const matches = match.matches;
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
@@ -164,7 +164,7 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[foo="boo"]': id,
             });
-            const match = attribMatcher.matchAll(testDoc);
+            const match = attribMatcher.match(testDoc);
             const matches = match.matches;
             assert.equal(matches[0], testDoc);
         },
@@ -172,7 +172,7 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[bar="booz"]': id,
             });
-            const match = attribMatcher.matchAll(testDoc);
+            const match = attribMatcher.match(testDoc);
             const matches = match.matches;
             assert.equal(matches[0], testDoc);
         },
@@ -182,7 +182,7 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[foo^="bar <figure"]': id,
             });
-            const match = attribMatcher.matchAll(testDoc);
+            const match = attribMatcher.match(testDoc);
             const matches = match.matches;
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
@@ -198,7 +198,7 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[foo^="boo"]': id,
             });
-            const match = attribMatcher.matchAll(testDoc);
+            const match = attribMatcher.match(testDoc);
             const matches = match.matches;
             assert.equal(matches[0], testDoc);
         },
@@ -206,7 +206,7 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[bar^="booz"]': id,
             });
-            const match = attribMatcher.matchAll(testDoc);
+            const match = attribMatcher.match(testDoc);
             const matches = match.matches;
             assert.equal(matches[0], testDoc);
         },
@@ -216,7 +216,7 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[foo~="bar"]': id,
             });
-            const match = attribMatcher.matchAll(testDoc);
+            const match = attribMatcher.match(testDoc);
             const matches = match.matches;
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
@@ -232,7 +232,7 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[baz~="baax"]': id,
             });
-            const match = attribMatcher.matchAll(testDoc);
+            const match = attribMatcher.match(testDoc);
             const matches = match.matches;
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
@@ -248,7 +248,7 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[baz~="boooz"]': id,
             });
-            const match = attribMatcher.matchAll(testDoc);
+            const match = attribMatcher.match(testDoc);
             const matches = match.matches;
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
@@ -264,7 +264,7 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[foo~="boo"]': id,
             });
-            const match = attribMatcher.matchAll(testDoc);
+            const match = attribMatcher.match(testDoc);
             const matches = match.matches;
             assert.equal(matches[0], testDoc);
         },
@@ -272,7 +272,7 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[bar~="booz"]': id,
             });
-            const match = attribMatcher.matchAll(testDoc);
+            const match = attribMatcher.match(testDoc);
             const matches = match.matches;
             assert.equal(matches[0], testDoc);
         },
@@ -282,7 +282,7 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[foo$="figure >"]': id,
             });
-            const match = attribMatcher.matchAll(testDoc);
+            const match = attribMatcher.match(testDoc);
             const matches = match.matches;
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
@@ -298,7 +298,7 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[baz$=" boooz"]': id,
             });
-            const match = attribMatcher.matchAll(testDoc);
+            const match = attribMatcher.match(testDoc);
             const matches = match.matches;
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
@@ -314,7 +314,7 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[foo$="figure"]': id,
             });
-            const match = attribMatcher.matchAll(testDoc);
+            const match = attribMatcher.match(testDoc);
             const matches = match.matches;
             assert.equal(matches[0], testDoc);
         },
@@ -322,7 +322,7 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[bar~="boooz"]': id,
             });
-            const match = attribMatcher.matchAll(testDoc);
+            const match = attribMatcher.match(testDoc);
             const matches = match.matches;
             assert.equal(matches[0], testDoc);
         },
@@ -334,7 +334,7 @@ module.exports = {
             figures = 0;
             var n = 200;
             for (var i = 0; i < n; i++) {
-                matcher.matchAll(obama);
+                matcher.match(obama);
             }
             console.log(figures);
             console.log((Date.now() - startTime) / n + 'ms per match');
@@ -350,7 +350,7 @@ module.exports = {
             });
             var n = 100;
             for (var i = 0; i < n; i++) {
-                linkMatcher.matchAll(obama);
+                linkMatcher.match(obama);
             }
             console.log(links / n);
             console.log((Date.now() - startTime) / n + 'ms per match');
@@ -365,7 +365,7 @@ module.exports = {
             var startTime = Date.now();
             var n = 50;
             for (var i = 0; i < n; i++) {
-                specificLinkMatcher.matchAll(obama);
+                specificLinkMatcher.match(obama);
             }
             console.log((Date.now() - startTime) / n + 'ms per match');
         }
@@ -376,7 +376,7 @@ module.exports = {
             var startTime = Date.now();
             var n = 100;
             for (var i = 0; i < n; i++) {
-                referencesMatcher.matchAll(obama);
+                referencesMatcher.match(obama);
             }
             console.log((Date.now() - startTime) / n + 'ms per match');
         }

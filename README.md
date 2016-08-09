@@ -28,7 +28,7 @@ var testDoc = "<html><body><div>"
         + "</div></body>";
 
 // Finally, execute it all.
-var match = matcher.matchAll(testDoc);
+var match = matcher.match(testDoc);
 
 console.log(match.matches);
 // [
