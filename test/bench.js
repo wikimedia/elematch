@@ -4,7 +4,7 @@ var assert = require('assert');
 var fs = require('fs');
 var assert = require('assert');
 
-var ElementMatcher = require('../lib/index');
+var ElementMatcher = require('../index');
 
 var htmlparser2 = require('htmlparser2');
 var libxmljs = require("libxmljs");
@@ -26,7 +26,7 @@ function bench(filename) {
     links = 0;
     var n = 200;
     for (var i = 0; i < n; i++) {
-        linkMatcher.matchAll(obama);
+        linkMatcher.match(obama);
     }
     console.log(links / n);
     console.log((Date.now() - startTime) / n + 'ms per match');
