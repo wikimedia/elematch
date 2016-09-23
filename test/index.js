@@ -41,6 +41,17 @@ const streamMatcher = new ElementMatcher([
         stream: true,
     }
 ]);
+const bodyMatcher = new ElementMatcher([
+    {
+        selector: {
+            nodeName: 'body',
+        },
+        handler: id,
+        stream: true,
+    }
+], {
+    matchOnly: true
+});
 
 function streamToText(stream) {
     let res = '';
@@ -164,6 +175,28 @@ module.exports = {
             })
             .then(innerHTML => {
                 assert.equal(innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
+            });
+        },
+        "streaming body matching": function() {
+            const firstHalf = testDoc.slice(0, 120);
+            const secondHalf = testDoc.slice(120);
+            const matches = bodyMatcher.match(firstHalf).value;
+            const m0 = matches[0];
+            if (!(m0.innerHTML instanceof ReadableStream)) {
+                throw new Error("Expected ReadableStream!");
+            }
+            if (!(m0.outerHTML instanceof ReadableStream)) {
+                throw new Error("Expected ReadableStream!");
+            }
+            const secondMatch = bodyMatcher.match(secondHalf);
+            assert.deepEqual(secondMatch, { value: [], done: true });
+            return streamToText(m0.outerHTML)
+            .then(outerHTML => {
+                assert.equal(outerHTML, '<body>\n' + customElement + '</body>');
+                return streamToText(m0.innerHTML);
+            })
+            .then(innerHTML => {
+                assert.equal(innerHTML, '\n' + customElement);
             });
         },
     },

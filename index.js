@@ -13,7 +13,7 @@ cssParser.registerAttrEqualityMods('^', '~', '$', '*');
 const Matcher = require('./lib/matcher.js');
 
 class CSSMatcher extends Matcher {
-    constructor(spec) {
+    constructor(spec, options) {
         // Convert spec to a Matcher spec.
         if (Array.isArray(spec)) {
             spec.forEach(rule => {
@@ -31,7 +31,7 @@ class CSSMatcher extends Matcher {
                 });
         }
 
-        super(spec);
+        super(spec, options);
     }
 
     static _parseCSSSelector(selector) {
