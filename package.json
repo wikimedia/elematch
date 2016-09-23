@@ -3,11 +3,14 @@
   "version": "0.3.0",
   "description": "Efficient HTML elment matching and -processing",
   "main": "index.js",
+  "browser": "build/matcher.js",
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "test": "mocha --no-timeouts --ui exports"
+    "test": "mocha --no-timeouts --ui exports",
+    "build": "browserify --exclude node-web-streams lib/matcher.js -o build/matcher.js",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -25,14 +28,14 @@
   },
   "homepage": "https://github.com/gwicke/elematch#readme",
   "devDependencies": {
+    "browserify": "^13.1.0",
+    "domino": "^1.0.23",
     "htmlparser2": "^3.9.0",
     "libxmljs": "git+https://github.com/gwicke/libxmljs#issue_253",
-    "mocha": "^2.3.3",
-    "domino": "^1.0.23"
+    "mocha": "^2.3.3"
   },
   "dependencies": {
     "css-selector-parser": "^1.1.0",
-    "html-entities": "^1.2.0",
     "node-web-streams": "^0.2.1"
   }
 }
