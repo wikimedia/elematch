@@ -23,12 +23,10 @@ class CSSMatcher extends Matcher {
             });
         } else if (typeof spec === 'object') {
             spec = Object.keys(spec)
-                .map(function(key) {
-                    return {
-                        handler: spec[key],
-                        selector: CSSMatcher._parseCSSSelector(key),
-                    };
-                });
+                .map(key => ({
+                handler: spec[key],
+                selector: CSSMatcher._parseCSSSelector(key)
+            }));
         }
 
         super(spec, options);
