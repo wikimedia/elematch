@@ -1,9 +1,11 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function (global){
 'use strict';
 
-// XXX: Only include this when using node. Skip when compiling with
-// browserify.
-const ReadableStream = require('node-web-streams').ReadableStream;
+// Shim ReadableStream in node
+if (!global.ReadableStream) {
+    var ReadableStream = require('node-web-streams').ReadableStream;
+}
 
 // Shared patterns
 const optionalAttributePattern = '(?:\\s+[a-zA-Z_-]+(?:=(?:"[^"]*"|\'[^\']*\'))?)*';
@@ -65,7 +67,7 @@ function decodeEntities(s) {
 class Matcher {
 
      /* @param {object} options (optional)
-     *      - {boolean} matchOnly: Only include matches in the value; drop
+     *      - {boolean} matchOnly: Only include matches in the values; drop
      *      unmatched content.
      */
     constructor(spec, options) {
@@ -109,13 +111,12 @@ class Matcher {
      *
      * @param {string} chunk
      * @return {object}
-     *   - {array<string|mixed>} value, an array of literal strings
-     *   interspersed with handler return value for matches.
+     *   - {array<string|mixed>} values, an array of literal strings
+     *   interspersed with handler return values for matches.
      *   - {boolean} done, whether the matcher has matched a complete
      *   document.
      */
-    match(chunk, options) {
-        options = options || {};
+    match(chunk) {
         const re = this._re;
         this._input += chunk;
         this._lastIndex = 0;
@@ -154,7 +155,7 @@ class Matcher {
         } while (this._lastIndex !== prevIndex);
 
         return {
-            value: this._matches,
+            values: this._matches,
             done: this._lastIndex === this._input.length
         };
     }
@@ -392,4 +393,5 @@ class Matcher {
 
 module.exports = Matcher;
 
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"node-web-streams":undefined}]},{},[1]);

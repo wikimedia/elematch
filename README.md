@@ -12,15 +12,41 @@ var EleMatch = require('elematch');
  * @return {object} Anything really; return values are accumulated in an
  *   array.
  */
-function handler(node) {
+function handler(node, ctx) {
     // Do something with the node
     return node;
 }
 
-// Create a matcher to handle some elements.
+// Create a matcher to handle some elements, using CSS syntax. To avoid
+// shipping a CSS parser to clients, CSS selectors are only supported in node.
 var matcher = new EleMatch({
     'test-element[foo="bar"]': handler,
     'foo-bar': handler,
+}, {
+    ctx: { hello: 'world' }
+});
+
+// Create the same matcher using more powerful rule objects. These are
+// supported in node & the client, and offer full functionality.
+var matcher = new EleMatch([
+{
+    selector: {
+        nodeName: 'test-element',
+        attributes: [{
+            name: 'foo',
+            operator: '=',
+            value: 'bar'
+        }],
+    },
+    handler: handler,
+    // Optional: Request node.innerHTML / outerHTML as `ReadableStream`
+    // instances. Only available in rule objects.
+    stream: false
+}, {
+    selector: { nodeName: 'foo-bar' },
+    handler: handler
+}], {
+    ctx: { hello: world }
 });
 
 var testDoc = "<html><body><div>"
@@ -30,19 +56,22 @@ var testDoc = "<html><body><div>"
 // Finally, execute it all.
 var match = matcher.match(testDoc);
 
-console.log(match.matches);
-// [
-//   "<html><body><div>",
-//   {
-//     "nodeName": "test-element",
-//     "attributes": {
-//       "foo": "bar"
+console.log(match);
+// {
+//   done: true,
+//   values: [
+//     "<html><body><div>",
+//     {
+//       "nodeName": "test-element",
+//       "attributes": {
+//         "foo": "bar"
+//       },
+//       "outerHTML": "<test-element foo='bar'>foo</test-element>",
+//       "innerHTML": "foo"
 //     },
-//     "outerHTML": "<test-element foo='bar'>foo</test-element>",
-//     "innerHTML": "foo"
-//   },
-//   "</div></body>"
-// ]
+//     "</div></body>"
+//   ]
+// }
 ```
 
 ## Performance
