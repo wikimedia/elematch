@@ -6,6 +6,11 @@
  * For a lightweight client-side version, require 'lib/matcher' instead.
  */
 
+// Shim ReadableStream in node
+if (global && !global.ReadableStream) {
+    global.ReadableStream = require('node-web-streams').ReadableStream;
+}
+
 const CssSelectorParser = require('css-selector-parser').CssSelectorParser;
 const cssParser = new CssSelectorParser();
 cssParser.registerSelectorPseudos('has');

@@ -3,8 +3,8 @@
 'use strict';
 
 // Shim ReadableStream in node
-if (!global.ReadableStream) {
-    var ReadableStream = require('node-web-streams').ReadableStream;
+if (global && !global.ReadableStream) {
+    global.ReadableStream = require('node-web-streams').ReadableStream;
 }
 
 // Shared patterns

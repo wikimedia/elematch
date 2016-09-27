@@ -1,6 +1,6 @@
 {
   "name": "elematch",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Efficient HTML elment matching and -processing",
   "main": "index.js",
   "browser": "lib/matcher.js",
