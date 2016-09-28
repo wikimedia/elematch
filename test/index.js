@@ -297,9 +297,9 @@ module.exports = {
     },
     'presence': {
         "attribute presence": function() {
-            const attribMatcher = new ElementMatcher({
-                'test-element[foo]': id,
-            });
+            const attribMatcher = new ElementMatcher([
+                { selector: 'test-element[foo]', handler: id },
+            ]);
             const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
@@ -312,18 +312,18 @@ module.exports = {
             assert.equal(matches[2], testFooter);
         },
         "attribute presence, no match": function() {
-            const attribMatcher = new ElementMatcher({
-                'test-element[bar]': id,
-            });
+            const attribMatcher = new ElementMatcher([
+                { selector: 'test-element[bar]', handler: id },
+            ]);
             const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testDoc);
         },
     },
     'equality': {
         "match": function() {
-            const attribMatcher = new ElementMatcher({
-                'test-element[foo="bar <figure >"]': id,
-            });
+            const attribMatcher = new ElementMatcher([
+                { selector: 'test-element[foo="bar <figure >"]', handler: id },
+            ]);
             const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
@@ -336,25 +336,25 @@ module.exports = {
             assert.equal(matches[2], testFooter);
         },
         "no value match": function() {
-            const attribMatcher = new ElementMatcher({
-                'test-element[foo="boo"]': id,
-            });
+            const attribMatcher = new ElementMatcher([
+                { selector: 'test-element[foo="boo"]', handler: id },
+            ]);
             const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testDoc);
         },
         "no attribute of name": function() {
-            const attribMatcher = new ElementMatcher({
-                'test-element[bar="booz"]': id,
-            });
+            const attribMatcher = new ElementMatcher([
+                { selector: 'test-element[bar="booz"]', handler: id },
+            ]);
             const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testDoc);
         },
     },
     'prefix': {
         "match": function() {
-            const attribMatcher = new ElementMatcher({
-                'test-element[foo^="bar <figure"]': id,
-            });
+            const attribMatcher = new ElementMatcher([
+                { selector: 'test-element[foo^="bar <figure"]', handler: id },
+            ]);
             const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
@@ -367,25 +367,25 @@ module.exports = {
             assert.equal(matches[2], testFooter);
         },
         "no value match": function() {
-            const attribMatcher = new ElementMatcher({
-                'test-element[foo^="boo"]': id,
-            });
+            const attribMatcher = new ElementMatcher([
+                { selector: 'test-element[foo^="boo"]', handler: id },
+            ]);
             const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testDoc);
         },
         "no attribute of name": function() {
-            const attribMatcher = new ElementMatcher({
-                'test-element[bar^="booz"]': id,
-            });
+            const attribMatcher = new ElementMatcher([
+                { selector: 'test-element[bar^="booz"]', handler: id },
+            ]);
             const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testDoc);
         },
     },
     'space-delimited attribute': {
         "match": function() {
-            const attribMatcher = new ElementMatcher({
-                'test-element[foo~="bar"]': id,
-            });
+            const attribMatcher = new ElementMatcher([
+                { selector: 'test-element[foo~="bar"]', handler: id },
+            ]);
             const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
@@ -398,9 +398,9 @@ module.exports = {
             assert.equal(matches[2], testFooter);
         },
         "match, middle": function() {
-            const attribMatcher = new ElementMatcher({
-                'test-element[baz~="baax"]': id,
-            });
+            const attribMatcher = new ElementMatcher([
+                { selector: 'test-element[baz~="baax"]', handler: id },
+            ]);
             const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
@@ -413,9 +413,9 @@ module.exports = {
             assert.equal(matches[2], testFooter);
         },
         "match, end": function() {
-            const attribMatcher = new ElementMatcher({
-                'test-element[baz~="boooz"]': id,
-            });
+            const attribMatcher = new ElementMatcher([
+                { selector: 'test-element[baz~="boooz"]', handler: id },
+            ]);
             const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
@@ -428,25 +428,25 @@ module.exports = {
             assert.equal(matches[2], testFooter);
         },
         "no value match": function() {
-            const attribMatcher = new ElementMatcher({
-                'test-element[foo~="boo"]': id,
-            });
+            const attribMatcher = new ElementMatcher([
+                { selector: 'test-element[foo~="boo"]', handler: id },
+            ]);
             const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testDoc);
         },
         "no attribute of name": function() {
-            const attribMatcher = new ElementMatcher({
-                'test-element[bar~="booz"]': id,
-            });
+            const attribMatcher = new ElementMatcher([
+                { selector: 'test-element[bar~="booz"]', handler: id },
+            ]);
             const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testDoc);
         },
     },
     'suffix': {
         "match": function() {
-            const attribMatcher = new ElementMatcher({
-                'test-element[foo$="figure >"]': id,
-            });
+            const attribMatcher = new ElementMatcher([
+                { selector: 'test-element[foo$="figure >"]', handler: id },
+            ]);
             const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
@@ -459,9 +459,9 @@ module.exports = {
             assert.equal(matches[2], testFooter);
         },
         "another match": function() {
-            const attribMatcher = new ElementMatcher({
-                'test-element[baz$=" boooz"]': id,
-            });
+            const attribMatcher = new ElementMatcher([
+                { selector: 'test-element[baz$=" boooz"]', handler: id },
+            ]);
             const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
@@ -474,16 +474,16 @@ module.exports = {
             assert.equal(matches[2], testFooter);
         },
         "no value match": function() {
-            const attribMatcher = new ElementMatcher({
-                'test-element[foo$="figure"]': id,
-            });
+            const attribMatcher = new ElementMatcher([
+                { selector: 'test-element[foo$="figure"]', handler: id },
+            ]);
             const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testDoc);
         },
         "space-delim attribute match, no attribute of name": function() {
-            const attribMatcher = new ElementMatcher({
-                'test-element[bar~="boooz"]': id,
-            });
+            const attribMatcher = new ElementMatcher([
+                { selector: 'test-element[bar~="boooz"]', handler: id },
+            ]);
             const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testDoc);
         },
@@ -506,9 +506,9 @@ module.exports = {
             var obama = fs.readFileSync('test/obama.html', 'utf8');
             links = 0;
             var startTime = Date.now();
-            var linkMatcher = new ElementMatcher({
-                'a': link,
-            });
+            var linkMatcher = new ElementMatcher([
+                { selector: 'a', handler: link },
+            ]);
             var n = 100;
             for (var i = 0; i < n; i++) {
                 linkMatcher.matchSync(obama);
@@ -519,9 +519,15 @@ module.exports = {
     },
     "performance, specific link": {
         "Obama": function() {
-            var specificLinkMatcher = new ElementMatcher({
-                'a[href="./Riverdale,_Chicago"]': link,
-            });
+            var specificLinkMatcher = new ElementMatcher([
+                {
+                    selector: {
+                        nodeName: 'a',
+                        attributes: [['a', '=', './Riverdale,_Chicago']]
+                    },
+                    handler: link
+                },
+            ]);
             var obama = fs.readFileSync('test/obama.html', 'utf8');
             var startTime = Date.now();
             var n = 50;

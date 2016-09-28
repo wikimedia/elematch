@@ -8,9 +8,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "mocha --no-timeouts --ui exports",
-    "build": "browserify --exclude node-web-streams lib/matcher.js -o build/matcher.js",
-    "prepublish": "npm run build"
+    "test": "mocha --no-timeouts --ui exports"
   },
   "repository": {
     "type": "git",
@@ -35,7 +33,6 @@
     "mocha": "^2.3.3"
   },
   "dependencies": {
-    "css-selector-parser": "^1.1.0",
     "node-web-streams": "^0.2.1"
   }
 }
