@@ -3,7 +3,8 @@
 var assert = require('assert');
 var fs = require('fs');
 var assert = require('assert');
-const ReadableStream = require('node-web-streams').ReadableStream;
+const webstreams = require('node-web-streams');
+const ReadableStream = webstreams.ReadableStream;
 
 var ElementMatcher = require('../index');
 
@@ -16,42 +17,6 @@ var figures = 0;
 var links = 0;
 function figure(n) { figures++; return n; }
 function link(n) { links++; return n; }
-
-// XML enscaping rules: https://www.w3.org/TR/xml/#syntax
-
-const matcher = new ElementMatcher({
-    'test-element': id,
-    'foo-bar': id,
-    'figure': figure,
-});
-
-const streamMatcher = new ElementMatcher([
-    {
-        selector: {
-            nodeName: 'test-element',
-            attributes: [
-                {
-                    name: 'baz',
-                    operator: '=',
-                    value: 'booz baax boooz'
-                }
-            ]
-        },
-        handler: id,
-        stream: true,
-    }
-]);
-const bodyMatcher = new ElementMatcher([
-    {
-        selector: {
-            nodeName: 'body',
-        },
-        handler: id,
-        stream: true,
-    }
-], {
-    matchOnly: true
-});
 
 function streamToText(stream) {
     let res = '';
@@ -69,9 +34,29 @@ function streamToText(stream) {
     return pump();
 }
 
-var referencesMatcher = new ElementMatcher({
-    'ol[typeof="mw:Extension/references"]': link,
+const matcher = new ElementMatcher([
+    { selector: 'test-element', handler: id },
+    { selector: 'foo-bar', handler: id },
+    { selector: 'figure', handler: figure },
+]);
+
+const streamMatcher = new ElementMatcher([
+    {
+        selector: 'test-element[baz="booz baax boooz"]',
+        handler: id,
+        stream: true,
+    }
+]);
+const bodyMatcher = new ElementMatcher([
+    { selector: 'body', handler: id, stream: true }
+], null, {
+    matchOnly: true
 });
+
+
+var referencesMatcher = new ElementMatcher([
+    { selector: 'ol[typeof="mw:Extension/references"]', handler: link },
+]);
 
 function innerHTML(s) {
     return s.replace(/^<[^>]+>(.*)<\/[^>]+>$/, '$1');
@@ -87,8 +72,7 @@ var docWithOverMatch = testHead + customElement + '<div class="a"></div>' + test
 module.exports = {
     "basic matching": {
         "custom element": function() {
-            const match = matcher.match(testDoc);
-            const matches = match.values;
+            const matches = matcher.matchSync(testDoc);
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
             assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
@@ -102,8 +86,7 @@ module.exports = {
         "figure": function() {
             var testElement = '<figure>foo</figure>';
             var doc = testHead + '<div>' + testElement + '</div>' + testFooter;
-            const match = matcher.match(doc);
-            const matches = match.values;
+            const matches = matcher.matchSync(doc);
             assert.equal(matches[0], testHead + '<div>');
             const m1 = matches[1];
             assert.equal(m1.innerHTML, 'foo');
@@ -112,8 +95,7 @@ module.exports = {
             assert.equal(matches[2], '</div>' + testFooter);
         },
         "doesn't overmatch attributes": function() {
-            const match = matcher.match(docWithOverMatch);
-            const matches = match.values;
+            const matches = matcher.matchSync(docWithOverMatch);
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
             assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
@@ -127,7 +109,7 @@ module.exports = {
     },
     "stream matching": {
         "ReadableStream innerHTML / outerHTML": function() {
-            const matches = streamMatcher.match(testDoc).values;
+            const matches = streamMatcher.matchSync(testDoc);
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
             if (!(m1.innerHTML instanceof ReadableStream)) {
@@ -150,109 +132,167 @@ module.exports = {
                 assert.equal(innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
             });
         },
-        "ReadableStream innerHTML / outerHTML, chunked writing": function() {
-            const firstHalf = testDoc.slice(0, 120);
-            const secondHalf = testDoc.slice(120);
-            const matches = streamMatcher.match(firstHalf).values;
-            assert.equal(matches[0], testHead);
-            const m1 = matches[1];
-            if (!(m1.innerHTML instanceof ReadableStream)) {
-                throw new Error("Expected ReadableStream!");
-            }
-            if (!(m1.outerHTML instanceof ReadableStream)) {
-                throw new Error("Expected ReadableStream!");
-            }
-            const secondMatches = streamMatcher.match(secondHalf).values;
-            assert.equal(secondMatches[0], testFooter);
-            assert.deepEqual(m1.attributes, {
-                foo: 'bar <figure >',
-                baz: 'booz baax boooz'
-            });
-            return streamToText(m1.outerHTML)
-            .then(outerHTML => {
-                assert.equal(outerHTML, customElement);
-                return streamToText(m1.innerHTML);
+        "ReadableStream innerHTML / outerHTML, chunked parsing": function() {
+            const matcher = new ElementMatcher(streamMatcher, webstreams.toWebReadableStream([
+                testDoc.slice(0, 120),
+                testDoc.slice(120)
+            ]));
+
+            return matcher.read()
+            .then(res => {
+                const matches = res.value;
+                assert.equal(matches[0], testHead);
+                const m1 = matches[1];
+                if (!(m1.innerHTML instanceof ReadableStream)) {
+                    throw new Error("Expected ReadableStream!");
+                }
+                if (!(m1.outerHTML instanceof ReadableStream)) {
+                    throw new Error("Expected ReadableStream!");
+                }
+                assert.deepEqual(m1.attributes, {
+                    foo: 'bar <figure >',
+                    baz: 'booz baax boooz'
+                });
+                return streamToText(m1.outerHTML)
+                .then(outerHTML => {
+                    assert.equal(outerHTML, customElement);
+                    return streamToText(m1.innerHTML);
+                })
+                .then(innerHTML => {
+                    assert.equal(innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
+                });
             })
-            .then(innerHTML => {
-                assert.equal(innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
+            // Second chunk
+            .then(() => matcher.read())
+            .then(res => {
+                const matches = res.value;
+                assert.equal(matches[0], testFooter);
             });
         },
         "streaming body matching": function() {
-            const firstHalf = testDoc.slice(0, 120);
-            const secondHalf = testDoc.slice(120);
-            const matches = bodyMatcher.match(firstHalf).values;
-            const m0 = matches[0];
-            if (!(m0.innerHTML instanceof ReadableStream)) {
-                throw new Error("Expected ReadableStream!");
-            }
-            if (!(m0.outerHTML instanceof ReadableStream)) {
-                throw new Error("Expected ReadableStream!");
-            }
-            const secondMatch = bodyMatcher.match(secondHalf);
-            assert.deepEqual(secondMatch, { values: [], done: true });
-            return streamToText(m0.outerHTML)
-            .then(outerHTML => {
-                assert.equal(outerHTML, '<body>\n' + customElement + '</body>');
-                return streamToText(m0.innerHTML);
+            const chunkStream = webstreams.toWebReadableStream([testDoc.slice(0, 120), testDoc.slice(120)]);
+            const matcher = new ElementMatcher(bodyMatcher, chunkStream, { matchOnly: true });
+            return matcher.read()
+            .then(res => {
+                const matches = res.value;
+                const m0 = matches[0];
+                if (!(m0.innerHTML instanceof ReadableStream)) {
+                    throw new Error("Expected ReadableStream!");
+                }
+                if (!(m0.outerHTML instanceof ReadableStream)) {
+                    throw new Error("Expected ReadableStream!");
+                }
+                return streamToText(m0.outerHTML)
+                .then(outerHTML => {
+                    assert.equal(outerHTML, '<body>\n' + customElement + '</body>');
+                    return streamToText(m0.innerHTML);
+                })
+                .then(innerHTML => {
+                    assert.equal(innerHTML, '\n' + customElement);
+                })
+                .then(() => matcher.read());
             })
-            .then(innerHTML => {
-                assert.equal(innerHTML, '\n' + customElement);
+            .then(res => {
+                assert.deepEqual(res, { value: undefined, done: true });
             });
         },
     },
     "incomplete buffer": {
+        "fail matchSync": () => {
+            const truncatedCustomElement = customElement.substr(0, customElement.length - 2);
+            var doc = testHead + truncatedCustomElement;
+            try {
+                const match = matcher.matchSync(doc);
+            } catch (e) {
+                // Okay, everything is fine.
+                return;
+            }
+            throw new Error("Expected matchSync to throw on incomplete input!");
+        },
         "custom element": function() {
             const truncatedCustomElement = customElement.substr(0, customElement.length - 2);
             var doc = testHead + truncatedCustomElement;
-            const match = matcher.match(doc);
-            const matches = match.values;
-            assert.equal(matches[0], testHead);
-            if (matches.length > 1) {
-                throw new Error("Found more matches than expected!");
-            }
-            assert.equal(match.done, false);
-            const finalMatch = matcher.match(customElement.slice(-2) + '<div class="a"></div>' + testFooter);
-            const fm0 = finalMatch.values[0];
-            assert.equal(fm0.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
-            assert.equal(fm0.outerHTML, customElement);
-            assert.deepEqual(fm0.attributes, {
-                foo: 'bar <figure >',
-                baz: 'booz baax boooz'
+            const inputStream = webstreams.toWebReadableStream([
+                doc,
+                customElement.slice(-2) + '<div class="a"></div>' + testFooter
+            ]);
+            const localMatcher = new ElementMatcher(matcher, inputStream);
+            return localMatcher.read()
+            .then(res => {
+                const matches = res.value;
+                assert.equal(matches[0], testHead);
+                if (matches.length > 1) {
+                    throw new Error("Found more matches than expected!");
+                }
+                assert.equal(res.done, false);
+                return localMatcher.read();
+            })
+            .then(res => {
+                const fm0 = res.value[0];
+                assert.equal(fm0.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
+                assert.equal(fm0.outerHTML, customElement);
+                assert.deepEqual(fm0.attributes, {
+                    foo: 'bar <figure >',
+                    baz: 'booz baax boooz'
+                });
+                assert.equal(res.value[1], '<div class="a"></div>' + testFooter);
+                return localMatcher.read();
+            })
+            .then(res => {
+                assert.deepEqual(res, { value: undefined, done: true });
             });
-            assert.equal(finalMatch.values[1], '<div class="a"></div>' + testFooter);
         },
         "incomplete other tag, after tag name": function() {
-            matcher.reset();
-            var testElement = '<figure>foo</figure>';
-            var doc = testHead + '<div>' + testElement + '</div><othertag ';
-            const match = matcher.match(doc);
-            const matches = match.values;
-            assert.equal(matches[0], testHead + '<div>');
-            const m1 = matches[1];
-            assert.equal(m1.innerHTML, 'foo');
-            assert.equal(m1.outerHTML, testElement);
-            assert.deepEqual(m1.attributes, {});
-            assert.equal(match.done, false);
-            const finalMatch = matcher.match('foo="bar"></othertag></body>');
-            assert.equal(finalMatch.values[0], '<othertag foo="bar"></othertag></body>');
-            assert.equal(finalMatch.done, true);
+            const testElement = '<figure>foo</figure>';
+            const inputStream = webstreams.toWebReadableStream([
+                testHead + '<div>' + testElement + '</div><othertag ',
+                'foo="bar"></othertag></body>'
+
+            ]);
+            const localMatcher = new ElementMatcher(matcher, inputStream);
+            return localMatcher.read()
+            .then(res => {
+                const matches = res.value;
+                assert.equal(matches[0], testHead + '<div>');
+                const m1 = matches[1];
+                assert.equal(m1.innerHTML, 'foo');
+                assert.equal(m1.outerHTML, testElement);
+                assert.deepEqual(m1.attributes, {});
+                assert.equal(res.done, false);
+                return localMatcher.read();
+            })
+            .then(res => {
+                assert.equal(res.value[0], '<othertag foo="bar"></othertag></body>');
+                return localMatcher.read();
+            })
+            .then(res => assert.deepEqual(res, { value: undefined, done: true }));
         },
         "incomplete other tag, in attribute": function() {
-            matcher.reset();
             var testElement = '<figure>foo</figure>';
-            var doc = testHead + '<div>' + testElement + '</div><othertag foo="bar';
-            const match = matcher.match(doc);
-            const matches = match.values;
-            assert.equal(matches[0], testHead + '<div>');
-            const m1 = matches[1];
-            assert.equal(m1.innerHTML, 'foo');
-            assert.equal(m1.outerHTML, testElement);
-            assert.deepEqual(m1.attributes, {});
-            assert.deepEqual(matches[2], '</div>');
-            assert.equal(match.done, false);
-            const finalMatch = matcher.match('"></othertag></body>');
-            assert.equal(finalMatch.values[0], '<othertag foo="bar"></othertag></body>');
-            assert.equal(finalMatch.done, true);
+            const inputStream = webstreams.toWebReadableStream([
+                testHead + '<div>' + testElement + '</div><othertag foo="bar',
+                '"></othertag></body>'
+
+            ]);
+            const localMatcher = new ElementMatcher(matcher, inputStream);
+            return localMatcher.read()
+            .then(res => {
+                const matches = res.value;
+                assert.equal(matches[0], testHead + '<div>');
+                const m1 = matches[1];
+                assert.equal(m1.innerHTML, 'foo');
+                assert.equal(m1.outerHTML, testElement);
+                assert.deepEqual(m1.attributes, {});
+                assert.deepEqual(matches[2], '</div>');
+                assert.equal(res.done, false);
+                return localMatcher.read();
+            })
+            .then(res => {
+                assert.equal(res.value[0], '<othertag foo="bar"></othertag></body>');
+                assert.equal(res.done, false);
+                return localMatcher.read();
+            })
+            .then(res => assert.deepEqual(res, { value: undefined, done: true }));
         },
     },
     'presence': {
@@ -260,8 +300,7 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[foo]': id,
             });
-            const match = attribMatcher.match(testDoc);
-            const matches = match.values;
+            const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
             assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
@@ -276,8 +315,7 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[bar]': id,
             });
-            const match = attribMatcher.match(testDoc);
-            const matches = match.values;
+            const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testDoc);
         },
     },
@@ -286,8 +324,7 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[foo="bar <figure >"]': id,
             });
-            const match = attribMatcher.match(testDoc);
-            const matches = match.values;
+            const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
             assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
@@ -302,16 +339,14 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[foo="boo"]': id,
             });
-            const match = attribMatcher.match(testDoc);
-            const matches = match.values;
+            const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testDoc);
         },
         "no attribute of name": function() {
             const attribMatcher = new ElementMatcher({
                 'test-element[bar="booz"]': id,
             });
-            const match = attribMatcher.match(testDoc);
-            const matches = match.values;
+            const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testDoc);
         },
     },
@@ -320,8 +355,7 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[foo^="bar <figure"]': id,
             });
-            const match = attribMatcher.match(testDoc);
-            const matches = match.values;
+            const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
             assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
@@ -336,16 +370,14 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[foo^="boo"]': id,
             });
-            const match = attribMatcher.match(testDoc);
-            const matches = match.values;
+            const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testDoc);
         },
         "no attribute of name": function() {
             const attribMatcher = new ElementMatcher({
                 'test-element[bar^="booz"]': id,
             });
-            const match = attribMatcher.match(testDoc);
-            const matches = match.values;
+            const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testDoc);
         },
     },
@@ -354,8 +386,7 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[foo~="bar"]': id,
             });
-            const match = attribMatcher.match(testDoc);
-            const matches = match.values;
+            const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
             assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
@@ -370,8 +401,7 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[baz~="baax"]': id,
             });
-            const match = attribMatcher.match(testDoc);
-            const matches = match.values;
+            const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
             assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
@@ -386,8 +416,7 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[baz~="boooz"]': id,
             });
-            const match = attribMatcher.match(testDoc);
-            const matches = match.values;
+            const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
             assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
@@ -402,16 +431,14 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[foo~="boo"]': id,
             });
-            const match = attribMatcher.match(testDoc);
-            const matches = match.values;
+            const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testDoc);
         },
         "no attribute of name": function() {
             const attribMatcher = new ElementMatcher({
                 'test-element[bar~="booz"]': id,
             });
-            const match = attribMatcher.match(testDoc);
-            const matches = match.values;
+            const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testDoc);
         },
     },
@@ -420,8 +447,7 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[foo$="figure >"]': id,
             });
-            const match = attribMatcher.match(testDoc);
-            const matches = match.values;
+            const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
             assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
@@ -436,8 +462,7 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[baz$=" boooz"]': id,
             });
-            const match = attribMatcher.match(testDoc);
-            const matches = match.values;
+            const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
             assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
@@ -452,16 +477,14 @@ module.exports = {
             const attribMatcher = new ElementMatcher({
                 'test-element[foo$="figure"]': id,
             });
-            const match = attribMatcher.match(testDoc);
-            const matches = match.values;
+            const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testDoc);
         },
         "space-delim attribute match, no attribute of name": function() {
             const attribMatcher = new ElementMatcher({
                 'test-element[bar~="boooz"]': id,
             });
-            const match = attribMatcher.match(testDoc);
-            const matches = match.values;
+            const matches = attribMatcher.matchSync(testDoc);
             assert.equal(matches[0], testDoc);
         },
     },
@@ -472,7 +495,7 @@ module.exports = {
             figures = 0;
             var n = 200;
             for (var i = 0; i < n; i++) {
-                matcher.match(obama);
+                matcher.matchSync(obama);
             }
             console.log(figures);
             console.log((Date.now() - startTime) / n + 'ms per match');
@@ -488,7 +511,7 @@ module.exports = {
             });
             var n = 100;
             for (var i = 0; i < n; i++) {
-                linkMatcher.match(obama);
+                linkMatcher.matchSync(obama);
             }
             console.log(links / n);
             console.log((Date.now() - startTime) / n + 'ms per match');
@@ -503,7 +526,7 @@ module.exports = {
             var startTime = Date.now();
             var n = 50;
             for (var i = 0; i < n; i++) {
-                specificLinkMatcher.match(obama);
+                specificLinkMatcher.matchSync(obama);
             }
             console.log((Date.now() - startTime) / n + 'ms per match');
         }
@@ -514,7 +537,7 @@ module.exports = {
             var startTime = Date.now();
             var n = 100;
             for (var i = 0; i < n; i++) {
-                referencesMatcher.match(obama);
+                referencesMatcher.matchSync(obama);
             }
             console.log((Date.now() - startTime) / n + 'ms per match');
         }

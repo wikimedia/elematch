@@ -40,7 +40,7 @@ class CSSMatcher extends Matcher {
       *      unmatched content.
       *      - {object} ctx (optional): A context object passed to handlers.
       */
-    constructor(spec, options) {
+    constructor(spec, reader, options) {
         // Convert spec to a Matcher spec.
         if (Array.isArray(spec)) {
             spec.forEach(rule => {
@@ -58,7 +58,7 @@ class CSSMatcher extends Matcher {
             }));
         }
 
-        super(spec, options);
+        super(spec, reader, options);
     }
 
     static _parseCSSSelector(selector) {

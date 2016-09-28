@@ -1,11 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-(function (global){
 'use strict';
-
-// Shim ReadableStream in node
-if (global && !global.ReadableStream) {
-    global.ReadableStream = require('node-web-streams').ReadableStream;
-}
 
 // Shared patterns
 const optionalAttributePattern = '(?:\\s+[a-zA-Z_-]+(?:=(?:"[^"]*"|\'[^\']*\'))?)*';
@@ -269,11 +263,12 @@ class Matcher {
                 }
                 return;
             }
-            if (match[1]) {
-                // End tag
-                args.depth--;
-                if (args.depth === 0) {
-                    if (match[2] === args.rule.selector.nodeName) {
+
+            if (match[2] === args.rule.selector.nodeName) {
+                if (match[1]) {
+                    // End tag
+                    args.depth--;
+                    if (args.depth === 0) {
                         const outerChunk = this._input.substring(this._lastIndex,
                                 re.anyTag.lastIndex);
                         const innerChunk = this._input.substring(this._lastIndex, match.index);
@@ -293,13 +288,11 @@ class Matcher {
                         this._activeMatcher = null;
                         this._activeMatcherArgs = null;
                         return;
-                    } else {
-                        throw new Error(`Mis-matched end tag: Expected ${JSON.stringify(args.rule.selector.nodeName)}, got ${JSON.stringify(match[2])}.`);
                     }
+                } else if (!match[3]) {
+                    // Start tag.
+                    args.depth++;
                 }
-            } else if (!match[3]) {
-                // Start tag.
-                args.depth++;
             }
         }
     }
@@ -404,5 +397,4 @@ class Matcher {
 
 module.exports = Matcher;
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"node-web-streams":undefined}]},{},[1]);
+},{}]},{},[1]);
