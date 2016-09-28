@@ -196,6 +196,39 @@ module.exports = {
                 assert.deepEqual(res, { value: undefined, done: true });
             });
         },
+        "streaming body matching, multi-chunk body": function() {
+            const chunks = [
+                testDoc.slice(0, 110),
+                testDoc.slice(110, 115),
+                testDoc.slice(115, 120),
+                testDoc.slice(120)
+            ];
+            const chunkStream = webstreams.toWebReadableStream(chunks);
+            const matcher = new ElementMatcher(bodyMatcher, chunkStream, { matchOnly: true });
+            return matcher.read()
+            .then(res => {
+                const matches = res.value;
+                const m0 = matches[0];
+                if (!(m0.innerHTML instanceof ReadableStream)) {
+                    throw new Error("Expected ReadableStream!");
+                }
+                if (!(m0.outerHTML instanceof ReadableStream)) {
+                    throw new Error("Expected ReadableStream!");
+                }
+                return streamToText(m0.outerHTML)
+                .then(outerHTML => {
+                    assert.equal(outerHTML, '<body>\n' + customElement + '</body>');
+                    return streamToText(m0.innerHTML);
+                })
+                .then(innerHTML => {
+                    assert.equal(innerHTML, '\n' + customElement);
+                })
+                .then(() => matcher.read());
+            })
+            .then(res => {
+                assert.deepEqual(res, { value: undefined, done: true });
+            });
+        }
     },
     "incomplete buffer": {
         "fail matchSync": () => {
