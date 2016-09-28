@@ -17,49 +17,53 @@ function handler(node, ctx) {
     return node;
 }
 
+const testDoc = "<html><body><div>"
+        + "<test-element foo='bar'>foo</test-element>"
+        + "</div></body>";
+
+const inputStream = new ReadableStream({
+    start(controller) {
+        controller.enqueue(testDoc);
+        controller.close();
+    }
+});
+
 // Create a matcher to handle some elements, using CSS syntax. To avoid
 // shipping a CSS parser to clients, CSS selectors are only supported in node.
-var matcher = new EleMatch({
-    'test-element[foo="bar"]': handler,
-    'foo-bar': handler,
-}, {
+var matcher = new EleMatch([
+    { selector: 'test-element[foo="bar"]', handler: handler },
+    { selector: 'foo-bar', handler: handler },
+], inputStream, {
     ctx: { hello: 'world' }
 });
 
-// Create the same matcher using more powerful rule objects. These are
-// supported in node & the client, and offer full functionality.
-var matcher = new EleMatch([
-{
+// Create the same matcher using more verbose selector objects. These are
+// especially useful when processing dynamic values, as this avoids the need to
+// escape special chars in CSS selectors.
+var matcher = new EleMatch([{
     selector: {
         nodeName: 'test-element',
-        attributes: [{
-            name: 'foo',
-            operator: '=',
-            value: 'bar'
-        }],
+        attributes: [['foo', '=', 'bar']]
     },
     handler: handler,
     // Optional: Request node.innerHTML / outerHTML as `ReadableStream`
     // instances. Only available in rule objects.
     stream: false
-}, {
-    selector: { nodeName: 'foo-bar' },
-    handler: handler
-}], {
+}], 
+inputStream,
+{
     ctx: { hello: world }
 });
 
-var testDoc = "<html><body><div>"
-        + "<test-element foo='bar'>foo</test-element>"
-        + "</div></body>";
-
-// Finally, execute it all.
-var match = matcher.match(testDoc);
-
-console.log(match);
+// Read matches
+matcher.read()
+.then(res => {
+    console.log(res);
+    return matcher.read();
+})
 // {
-//   done: true,
-//   values: [
+//   done: false,
+//   value: [
 //     "<html><body><div>",
 //     {
 //       "nodeName": "test-element",
@@ -72,6 +76,8 @@ console.log(match);
 //     "</div></body>"
 //   ]
 // }
+.then(res => console.log);
+// { done: true, value: undefined }
 ```
 
 ## Performance
