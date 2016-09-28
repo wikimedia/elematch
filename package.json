@@ -1,6 +1,6 @@
 {
   "name": "elematch",
-  "version": "1.0.4",
+  "version": "2.0.0",
   "description": "Efficient HTML elment matching and -processing",
   "main": "index.js",
   "browser": "lib/matcher.js",
@@ -17,14 +17,17 @@
   "keywords": [
     "element",
     "match",
-    "sax"
+    "sax",
+    "html5",
+    "streaming",
+    "serviceworker"
   ],
   "author": "Gabriel Wicke <gwicke@wikimedia.org>",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/gwicke/elematch/issues"
+    "url": "https://github.com/wikimedia/elematch/issues"
   },
-  "homepage": "https://github.com/gwicke/elematch#readme",
+  "homepage": "https://github.com/wikimedia/elematch#readme",
   "devDependencies": {
     "browserify": "^13.1.0",
     "domino": "^1.0.23",
