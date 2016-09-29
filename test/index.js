@@ -591,6 +591,17 @@ module.exports = {
             console.log((Date.now() - startTime) / n + 'ms per match');
         }
     },
+    "performance, body extraction": {
+        "Obama": function() {
+            var obama = fs.readFileSync('test/obama.html', 'utf8');
+            var startTime = Date.now();
+            var n = 100;
+            for (var i = 0; i < n; i++) {
+                new HTMLTransformReader(obama, bodyMatchOptions).drainSync();
+            }
+            console.log((Date.now() - startTime) / n + 'ms per match');
+        }
+    },
     "performance, htmlparser2 Default": {
         "Obama": function() {
             var handler = new htmlparser2.DefaultHandler();
