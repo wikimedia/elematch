@@ -1,32 +1,36 @@
 {
-  "name": "elematch",
-  "version": "1.0.0",
-  "description": "Efficient HTML elment matching and -processing",
+  "name": "web-html-stream",
+  "version": "2.0.0",
+  "description": "Streaming HTML element matching, processing & extraction, using web streams.",
   "main": "index.js",
-  "browser": "build/matcher.js",
+  "browser": "lib/matcher.js",
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "test": "mocha --no-timeouts --ui exports",
-    "build": "browserify --exclude node-web-streams lib/matcher.js -o build/matcher.js",
-    "prepublish": "npm run build"
+    "test": "mocha --no-timeouts --ui exports"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gwicke/elematch.git"
+    "url": "git+https://github.com/wikimedia/web-html-stream.git"
   },
   "keywords": [
+    "html5",
+    "streaming",
+    "streams",
+    "whatwg",
+    "templating",
     "element",
     "match",
-    "sax"
+    "sax",
+    "serviceworker"
   ],
   "author": "Gabriel Wicke <gwicke@wikimedia.org>",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/gwicke/elematch/issues"
+    "url": "https://github.com/wikimedia/web-html-stream/issues"
   },
-  "homepage": "https://github.com/gwicke/elematch#readme",
+  "homepage": "https://github.com/wikimedia/web-html-stream#readme",
   "devDependencies": {
     "browserify": "^13.1.0",
     "domino": "^1.0.23",
@@ -35,7 +39,7 @@
     "mocha": "^2.3.3"
   },
   "dependencies": {
-    "css-selector-parser": "^1.1.0",
-    "node-web-streams": "^0.2.1"
+    "node-web-streams": "^0.2.1",
+    "web-stream-util": "^0.3.3"
   }
 }
