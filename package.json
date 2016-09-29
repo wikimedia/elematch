@@ -1,6 +1,6 @@
 {
   "name": "web-html-stream",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Streaming HTML element matching, processing & extraction, using web streams.",
   "main": "index.js",
   "browser": "lib/matcher.js",
