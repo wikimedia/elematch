@@ -1,7 +1,7 @@
 {
-  "name": "elematch",
+  "name": "web-html-stream",
   "version": "2.0.0",
-  "description": "Efficient HTML elment matching and -processing",
+  "description": "Streaming HTML element matching, processing & extraction, using web streams.",
   "main": "index.js",
   "browser": "lib/matcher.js",
   "directories": {
@@ -12,22 +12,25 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gwicke/elematch.git"
+    "url": "git+https://github.com/wikimedia/web-html-stream.git"
   },
   "keywords": [
+    "html5",
+    "streaming",
+    "streams",
+    "whatwg",
+    "templating",
     "element",
     "match",
     "sax",
-    "html5",
-    "streaming",
     "serviceworker"
   ],
   "author": "Gabriel Wicke <gwicke@wikimedia.org>",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/wikimedia/elematch/issues"
+    "url": "https://github.com/wikimedia/web-html-stream/issues"
   },
-  "homepage": "https://github.com/wikimedia/elematch#readme",
+  "homepage": "https://github.com/wikimedia/web-html-stream#readme",
   "devDependencies": {
     "browserify": "^13.1.0",
     "domino": "^1.0.23",
@@ -36,6 +39,7 @@
     "mocha": "^2.3.3"
   },
   "dependencies": {
-    "node-web-streams": "^0.2.1"
+    "node-web-streams": "^0.2.1",
+    "web-stream-util": "^0.3.3"
   }
 }

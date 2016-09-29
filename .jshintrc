@@ -1,13 +1,8 @@
 {
 	"predef": [
-		"ve",
-
-		"setImmediate",
-
-		"QUnit",
-
 		"Map",
-		"Set"
+		"Set",
+        "ReadableStream"
 	],
 
 	"bitwise": true,

@@ -5,4 +5,4 @@ if (global && !global.ReadableStream) {
     global.ReadableStream = require('node-web-streams').ReadableStream;
 }
 
-module.exports = require('./lib/matcher.js');
+module.exports = require('./lib/index.js');
