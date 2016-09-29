@@ -63,7 +63,7 @@ var docWithOverMatch = testHead + customElement + '<div class="a"></div>' + test
 module.exports = {
     "basic matching": {
         "custom element": function() {
-            const matches = new HTMLTransformReader(testDoc, basicTestOptions).readAllSync();
+            const matches = new HTMLTransformReader(testDoc, basicTestOptions).drainSync();
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
             assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
@@ -77,7 +77,7 @@ module.exports = {
         "figure": function() {
             var testElement = '<figure>foo</figure>';
             var doc = testHead + '<div>' + testElement + '</div>' + testFooter;
-            const matches = new HTMLTransformReader(doc, basicTestOptions).readAllSync();
+            const matches = new HTMLTransformReader(doc, basicTestOptions).drainSync();
             assert.equal(matches[0], testHead + '<div>');
             const m1 = matches[1];
             assert.equal(m1.innerHTML, 'foo');
@@ -87,7 +87,7 @@ module.exports = {
         },
         "doesn't overmatch attributes": function() {
             const matches = new HTMLTransformReader(docWithOverMatch, basicTestOptions)
-                .readAllSync();
+                .drainSync();
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
             assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
@@ -102,7 +102,7 @@ module.exports = {
     "stream matching": {
         "ReadableStream innerHTML / outerHTML": function() {
             const matches = new HTMLTransformReader(testDoc, streamTestOptions)
-                .readAllSync();
+                .drainSync();
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
             if (!(m1.innerHTML instanceof ReadableStream)) {
@@ -227,7 +227,7 @@ module.exports = {
             const truncatedCustomElement = customElement.substr(0, customElement.length - 2);
             var doc = testHead + truncatedCustomElement;
             try {
-                const match = new HTMLTransformReader(doc, basicTestOptions).readAllSync();
+                const match = new HTMLTransformReader(doc, basicTestOptions).drainSync();
             } catch (e) {
                 // Okay, everything is fine.
                 return;
@@ -325,7 +325,7 @@ module.exports = {
             const matches = new HTMLTransformReader(testDoc, {
                 transforms: [
                     { selector: 'test-element[foo]', handler: id },
-            ]}).readAllSync();
+            ]}).drainSync();
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
             assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
@@ -341,7 +341,7 @@ module.exports = {
                 transforms: [
                     { selector: 'test-element[bar]', handler: id },
                 ]
-            }).readAllSync();
+            }).drainSync();
             assert.equal(matches[0], testDoc);
         },
     },
@@ -351,7 +351,7 @@ module.exports = {
                 transforms: [
                     { selector: 'test-element[foo="bar <figure >"]', handler: id },
                 ]
-            }).readAllSync();
+            }).drainSync();
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
             assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
@@ -367,7 +367,7 @@ module.exports = {
                 transforms: [
                     { selector: 'test-element[foo="boo"]', handler: id },
                 ]
-            }).readAllSync();
+            }).drainSync();
             assert.equal(matches[0], testDoc);
         },
         "no attribute of name": function() {
@@ -375,7 +375,7 @@ module.exports = {
                 transforms: [
                     { selector: 'test-element[bar="booz"]', handler: id },
                 ]
-            }).readAllSync();
+            }).drainSync();
             assert.equal(matches[0], testDoc);
         },
     },
@@ -385,7 +385,7 @@ module.exports = {
                 transforms: [
                     { selector: 'test-element[foo^="bar <figure"]', handler: id },
                 ]
-            }).readAllSync();
+            }).drainSync();
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
             assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
@@ -401,7 +401,7 @@ module.exports = {
                 transforms: [
                     { selector: 'test-element[foo^="boo"]', handler: id },
                 ]
-            }).readAllSync();
+            }).drainSync();
             assert.equal(matches[0], testDoc);
         },
         "no attribute of name": function() {
@@ -409,7 +409,7 @@ module.exports = {
                 transforms: [
                     { selector: 'test-element[bar^="booz"]', handler: id },
                 ]
-            }).readAllSync();
+            }).drainSync();
             assert.equal(matches[0], testDoc);
         },
     },
@@ -419,7 +419,7 @@ module.exports = {
                 transforms: [
                     { selector: 'test-element[foo~="bar"]', handler: id },
                 ]
-            }).readAllSync();
+            }).drainSync();
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
             assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
@@ -435,7 +435,7 @@ module.exports = {
                 transforms: [
                     { selector: 'test-element[baz~="baax"]', handler: id },
                 ]
-            }).readAllSync();
+            }).drainSync();
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
             assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
@@ -451,7 +451,7 @@ module.exports = {
                 transforms: [
                     { selector: 'test-element[baz~="boooz"]', handler: id },
                 ]
-            }).readAllSync();
+            }).drainSync();
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
             assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
@@ -467,7 +467,7 @@ module.exports = {
                 transforms: [
                     { selector: 'test-element[foo~="boo"]', handler: id },
                 ]
-            }).readAllSync();
+            }).drainSync();
             assert.equal(matches[0], testDoc);
         },
         "no attribute of name": function() {
@@ -475,7 +475,7 @@ module.exports = {
                 transforms: [
                     { selector: 'test-element[bar~="booz"]', handler: id },
                 ]
-            }).readAllSync();
+            }).drainSync();
             assert.equal(matches[0], testDoc);
         },
     },
@@ -485,7 +485,7 @@ module.exports = {
                 transforms: [
                     { selector: 'test-element[foo$="figure >"]', handler: id },
                 ]
-            }).readAllSync();
+            }).drainSync();
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
             assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
@@ -501,7 +501,7 @@ module.exports = {
                 transforms: [
                     { selector: 'test-element[baz$=" boooz"]', handler: id },
                 ]
-            }).readAllSync();
+            }).drainSync();
             assert.equal(matches[0], testHead);
             const m1 = matches[1];
             assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
@@ -517,7 +517,7 @@ module.exports = {
                 transforms: [
                     { selector: 'test-element[foo$="figure"]', handler: id },
                 ]
-            }).readAllSync();
+            }).drainSync();
             assert.equal(matches[0], testDoc);
         },
         "space-delim attribute match, no attribute of name": function() {
@@ -525,7 +525,7 @@ module.exports = {
                 transforms: [
                     { selector: 'test-element[bar~="boooz"]', handler: id },
                 ]
-            }).readAllSync();
+            }).drainSync();
             assert.equal(matches[0], testDoc);
         },
     },
@@ -536,7 +536,7 @@ module.exports = {
             figures = 0;
             var n = 200;
             for (var i = 0; i < n; i++) {
-                new HTMLTransformReader(obama, basicTestOptions).readAllSync();
+                new HTMLTransformReader(obama, basicTestOptions).drainSync();
             }
             console.log(figures);
             console.log((Date.now() - startTime) / n + 'ms per match');
@@ -554,7 +554,7 @@ module.exports = {
             });
             var n = 100;
             for (var i = 0; i < n; i++) {
-                linkReader.readAllSync();
+                linkReader.drainSync();
             }
             console.log(links / n);
             console.log((Date.now() - startTime) / n + 'ms per match');
@@ -575,7 +575,7 @@ module.exports = {
             var startTime = Date.now();
             var n = 50;
             for (var i = 0; i < n; i++) {
-                specificLinkReader.readAllSync();
+                specificLinkReader.drainSync();
             }
             console.log((Date.now() - startTime) / n + 'ms per match');
         }
@@ -586,7 +586,7 @@ module.exports = {
             var startTime = Date.now();
             var n = 100;
             for (var i = 0; i < n; i++) {
-                new HTMLTransformReader(obama, referenceTestOptions).readAllSync();
+                new HTMLTransformReader(obama, referenceTestOptions).drainSync();
             }
             console.log((Date.now() - startTime) / n + 'ms per match');
         }
