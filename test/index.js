@@ -126,12 +126,12 @@ module.exports = {
             });
         },
         "ReadableStream innerHTML / outerHTML, chunked parsing": function() {
-            const matcher = new HTMLTransformReader([
+            const reader = new HTMLTransformReader([
                 testDoc.slice(0, 120),
                 testDoc.slice(120)
             ], streamTestOptions);
 
-            return matcher.read()
+            return reader.read()
             .then(res => {
                 const matches = res.value;
                 assert.equal(matches[0], testHead);
@@ -146,6 +146,7 @@ module.exports = {
                     foo: 'bar <figure >',
                     baz: 'booz baax boooz'
                 });
+
                 return streamUtil.readToString(m1.outerHTML)
                 .then(outerHTML => {
                     assert.equal(outerHTML, customElement);
@@ -156,7 +157,7 @@ module.exports = {
                 });
             })
             // Second chunk
-            .then(() => matcher.read())
+            .then(() => reader.read())
             .then(res => {
                 const matches = res.value;
                 assert.equal(matches[0], testFooter);
