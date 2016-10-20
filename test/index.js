@@ -56,6 +56,7 @@ var testHead = "<doctype html><head><title>hello</title></head><body>\n";
 var testFooter = "</body>";
 var customElement = "<test-element foo='bar &lt;figure &gt;' baz=\"booz baax boooz\">"
             + "<foo-bar></foo-bar><figure>hello</figure></test-element>";
+const scriptContent = '<script>a<b</script><script src="foo.js"/><script>/*<![CDATA[*/a<b>c/*]]>*/</script>'
 
 var testDoc = testHead + customElement + testFooter;
 var docWithOverMatch = testHead + customElement + '<div class="a"></div>' + testFooter;
@@ -97,6 +98,19 @@ module.exports = {
                 baz: 'booz baax boooz'
             });
             assert.equal(matches[2], '<div class="a"></div>'+ testFooter);
+        },
+        "script content": function() {
+            const matches = new HTMLTransformReader(testHead + scriptContent + customElement + testFooter, basicTestOptions)
+                .drainSync();
+            assert.equal(matches[0], testHead + scriptContent);
+            const m1 = matches[1];
+            assert.equal(m1.innerHTML, '<foo-bar></foo-bar><figure>hello</figure>');
+            assert.equal(m1.outerHTML, customElement);
+            assert.deepEqual(m1.attributes, {
+                foo: 'bar <figure >',
+                baz: 'booz baax boooz'
+            });
+            assert.equal(matches[2], testFooter);
         },
     },
     "stream matching": {
