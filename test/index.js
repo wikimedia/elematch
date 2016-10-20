@@ -56,7 +56,7 @@ var testHead = "<doctype html><head><title>hello</title></head><body>\n";
 var testFooter = "</body>";
 var customElement = "<test-element foo='bar &lt;figure &gt;' baz=\"booz baax boooz\">"
             + "<foo-bar></foo-bar><figure>hello</figure></test-element>";
-const scriptContent = '<script>a<b</script><script src="foo.js"/><script>/*<![CDATA[*/a<b>c/*]]>*/</script>'
+const scriptContent = '<script>a<b</script><script src="foo.js"/><script>/*<![CDATA[*/a<b>c/*]]>*/</script><script>/*<![CDATA[*/(window.NORLQ=window.NORLQ||[]).push(function(){var ns,i,p,img;ns=document.getElementsByTagName(\'noscript\');for(i=0;i<ns.length;i++)\n{p=ns[i].nextSibling;if(p&&p.className&&p.className.indexOf(\'lazy-image-placeholder\')>-1){img=document.createElement(\'img\');img.setAttribute(\'src\',p.getAttribute(\'data-src\'));img.setAttribute(\'width\',p.getAttribute(\'data-width\'));img.setAttribute(\'height\',p.getAttribute(\'data-height\'));img.setAttribute(\'alt\',p.getAttribute(\'data-alt\'));p.parentNode.replaceChild(img,p);}}});/*]]>*/</script>';
 
 var testDoc = testHead + customElement + testFooter;
 var docWithOverMatch = testHead + customElement + '<div class="a"></div>' + testFooter;
