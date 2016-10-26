@@ -1,6 +1,6 @@
 {
   "name": "web-html-stream",
-  "version": "2.0.9",
+  "version": "2.0.10",
   "description": "Streaming HTML element matching, processing & extraction, using web streams.",
   "main": "index.js",
   "browser": "lib/index.js",
@@ -40,6 +40,6 @@
   },
   "dependencies": {
     "node-web-streams": "^0.2.1",
-    "web-stream-util": "^0.3.3"
+    "web-stream-util": "^0.3.6"
   }
 }

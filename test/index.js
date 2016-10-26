@@ -24,6 +24,7 @@ const basicTestOptions = {
         { selector: 'test-element', handler: id },
         { selector: 'foo-bar', handler: id },
         { selector: 'figure', handler: figure },
+        { selector: 'link', handler: id },
     ]
 };
 
@@ -56,6 +57,7 @@ var testHead = "<doctype html><head><title>hello</title></head><body>\n";
 var testFooter = "</body>";
 var customElement = "<test-element foo='bar &lt;figure &gt;' baz=\"booz baax boooz\">"
             + "<foo-bar></foo-bar><figure>hello</figure></test-element>";
+const selfClosingElement = '<link rel="stylesheet" href="/test.css"/>';
 const scriptContent = '<script>a<b</script><script src="foo.js"/><script>/*<![CDATA[*/a<b>c/*]]>*/</script><script>/*<![CDATA[*/(window.NORLQ=window.NORLQ||[]).push(function(){var ns,i,p,img;ns=document.getElementsByTagName(\'noscript\');for(i=0;i<ns.length;i++)\n{p=ns[i].nextSibling;if(p&&p.className&&p.className.indexOf(\'lazy-image-placeholder\')>-1){img=document.createElement(\'img\');img.setAttribute(\'src\',p.getAttribute(\'data-src\'));img.setAttribute(\'width\',p.getAttribute(\'data-width\'));img.setAttribute(\'height\',p.getAttribute(\'data-height\'));img.setAttribute(\'alt\',p.getAttribute(\'data-alt\'));p.parentNode.replaceChild(img,p);}}});/*]]>*/</script>';
 
 var testDoc = testHead + customElement + testFooter;
@@ -109,6 +111,19 @@ module.exports = {
             assert.deepEqual(m1.attributes, {
                 foo: 'bar <figure >',
                 baz: 'booz baax boooz'
+            });
+            assert.equal(matches[2], testFooter);
+        },
+        "self-closing element": function() {
+            const matches = new HTMLTransformReader(testHead + selfClosingElement + testFooter, basicTestOptions)
+                .drainSync();
+            assert.equal(matches[0], testHead);
+            const m1 = matches[1];
+            assert.equal(m1.innerHTML, '');
+            assert.equal(m1.outerHTML, selfClosingElement);
+            assert.deepEqual(m1.attributes, {
+                rel: 'stylesheet',
+                href: '/test.css'
             });
             assert.equal(matches[2], testFooter);
         },
